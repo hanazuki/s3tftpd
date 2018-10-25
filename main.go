@@ -1,0 +1,157 @@
+package main
+
+import (
+	"errors"
+	"fmt"
+	"io"
+	"net"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/coreos/go-systemd/activation"
+	"github.com/coreos/go-systemd/daemon"
+	"github.com/jessevdk/go-flags"
+	"github.com/pin/tftp"
+)
+
+type Config struct {
+	Args struct {
+		S3uri string `positional-arg-name:"S3URI"`
+	} `positional-args:"true" required:"true"`
+	Verbosity int `short:"v" long:"verbosity" default:"7" description:"Verbosity level for logging (0..8)"`
+	Timeout   int `short:"t" long:"timeout" default:"5000" description:"Timeout in milliseconds before the server retransmits a packet"`
+	Retries   int `short:"r" long:"retries" default:"5" description:"Number of retransmissions before the server disconnect the session"`
+
+	bucket  string
+	prefix  string
+	session *session.Session
+}
+
+func (c *Config) s3client() *s3.S3 {
+	return s3.New(c.session)
+}
+
+func (c *Config) logf(severity int, format string, args ...interface{}) (n int, error error) {
+	return c.log(severity, fmt.Sprintf(format, args...))
+}
+func (c *Config) log(severity int, message interface{}) (n int, error error) {
+	if severity >= c.Verbosity {
+		return 0, nil
+	}
+	return fmt.Fprintf(os.Stderr, "<%d>%s\n", severity, message)
+}
+
+func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
+	xfer := rf.(tftp.OutgoingTransfer)
+	remoteAddr := xfer.RemoteAddr()
+	c.logf(6, "RRQ %s %s", remoteAddr.String(), path)
+
+	key := prefixKey(c.prefix, path)
+	c.logf(7, "GetObject %s %s", c.bucket, key)
+	ret, err := c.s3client().GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(c.bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		c.logf(4, "S3: %s %s", remoteAddr.String(), err)
+		return err
+	}
+	defer ret.Body.Close()
+
+	if ret.ContentLength != nil {
+		tsize := *ret.ContentLength
+		c.logf(7, "%s tsize %s %s", remoteAddr.String(), tsize)
+		xfer.SetSize(tsize)
+	}
+	rf.ReadFrom(ret.Body)
+
+	return nil
+}
+
+func getUDPConn() (*net.UDPConn, error) {
+	conns, err := activation.PacketConns()
+	if err != nil {
+		return nil, err
+	}
+	if len(conns) < 1 {
+		return nil, errors.New("No datagram socket passed by system manager")
+	}
+	conn, ok := conns[0].(*net.UDPConn)
+	if !ok {
+		return nil, errors.New("FD passed by system manager is not a UDP socket")
+	}
+	return conn, nil
+}
+
+func parseArgs() (config Config, err error) {
+	_, err = flags.Parse(&config)
+	if err != nil {
+		return
+	}
+
+	config.bucket, config.prefix, err = parseS3uri(config.Args.S3uri)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func main() {
+	config, err := parseArgs()
+	if err != nil {
+		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {
+			os.Exit(0)
+		} else {
+			config.log(2, err)
+			os.Exit(1)
+		}
+	}
+
+	session, err := session.NewSession()
+	if err != nil {
+		config.log(2, err)
+		os.Exit(1)
+	}
+	config.session = session
+
+	conn, err := getUDPConn()
+	if err != nil {
+		config.log(2, err)
+		os.Exit(1)
+	}
+	config.logf(5, "Listening on %s", conn.LocalAddr().String())
+
+	server := tftp.NewServer(config.handleRead, nil)
+	server.SetTimeout(time.Duration(config.Timeout) * time.Millisecond)
+	server.SetRetries(config.Retries)
+
+	sigch := make(chan os.Signal, 1)
+	signal.Notify(
+		sigch,
+		syscall.SIGQUIT,
+	)
+	go func() {
+		for {
+			switch <-sigch {
+			case syscall.SIGQUIT:
+				config.log(5, "Gracefully stopping server")
+				daemon.SdNotify(false, daemon.SdNotifyStopping)
+				server.Shutdown()
+			}
+		}
+	}()
+
+	config.log(5, "Starting server")
+	daemon.SdNotify(false, daemon.SdNotifyReady)
+	server.Serve(conn)
+	if err != nil {
+		config.log(2, err)
+		os.Exit(1)
+	}
+}

@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+export DH_OPTIONS = -v
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	dh_auto_install --destdir=debian/tmp
+
+override_dh_installsystemd:
+	dh_installsystemd s3tftpd.socket
+	dh_installsystemd s3tftpd.service --no-enable --no-start

@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws/defaults"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/coreos/go-systemd/activation"
@@ -30,6 +30,7 @@ type Config struct {
 	Timeout     int  `short:"t" long:"timeout" default:"5000" description:"Timeout in milliseconds before the server retransmits a packet"`
 	Retries     int  `short:"r" long:"retries" default:"5" description:"Number of retransmissions before the server disconnect the session"`
 	NoDualStack bool `long:"no-dualstack" description:"Disable S3 dualstack endpoint"`
+	DebugApi    bool `long:"debug-api" env:"AWS_DEBUG" description:"Enable logging AWS API calls"`
 
 	bucket  string
 	prefix  string
@@ -37,7 +38,16 @@ type Config struct {
 }
 
 func (c *Config) awsConfig() *aws.Config {
-	return defaults.Get().Config.WithUseDualStack(!c.NoDualStack)
+	return defaults.Get().Config.
+		WithUseDualStack(!c.NoDualStack).
+		WithLogLevel(c.awsLogLevel())
+}
+
+func (c *Config) awsLogLevel() aws.LogLevelType {
+	if c.DebugApi {
+		return aws.LogDebug
+	}
+	return aws.LogOff
 }
 
 func (c *Config) s3client() *s3.S3 {

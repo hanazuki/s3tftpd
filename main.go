@@ -13,6 +13,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/defaults"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/coreos/go-systemd/activation"
@@ -25,17 +26,22 @@ type Config struct {
 	Args struct {
 		S3uri string `positional-arg-name:"S3URI"`
 	} `positional-args:"true" required:"true"`
-	Verbosity int `short:"v" long:"verbosity" default:"7" description:"Verbosity level for logging (0..8)"`
-	Timeout   int `short:"t" long:"timeout" default:"5000" description:"Timeout in milliseconds before the server retransmits a packet"`
-	Retries   int `short:"r" long:"retries" default:"5" description:"Number of retransmissions before the server disconnect the session"`
+	Verbosity   int  `short:"v" long:"verbosity" default:"7" description:"Verbosity level for logging (0..8)"`
+	Timeout     int  `short:"t" long:"timeout" default:"5000" description:"Timeout in milliseconds before the server retransmits a packet"`
+	Retries     int  `short:"r" long:"retries" default:"5" description:"Number of retransmissions before the server disconnect the session"`
+	NoDualStack bool `long:"no-dualstack" description:"Disable S3 dualstack endpoint"`
 
 	bucket  string
 	prefix  string
 	session *session.Session
 }
 
+func (c *Config) awsConfig() *aws.Config {
+	return defaults.Get().Config.WithUseDualStack(!c.NoDualStack)
+}
+
 func (c *Config) s3client() *s3.S3 {
-	return s3.New(c.session)
+	return s3.New(c.session, c.awsConfig())
 }
 
 func (c *Config) logf(severity int, format string, args ...interface{}) (n int, error error) {

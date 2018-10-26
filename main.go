@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/coreos/go-systemd/activation"
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/jessevdk/go-flags"
@@ -73,6 +75,32 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 	return nil
 }
 
+func buffer(wt io.WriterTo) io.Reader {
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	wt.WriteTo(buffer)
+	return buffer
+}
+
+func (c *Config) handleWrite(path string, wt io.WriterTo) error {
+	xfer := wt.(tftp.IncomingTransfer)
+	remoteAddr := xfer.RemoteAddr()
+	c.logf(6, "WRQ %s %s", remoteAddr.String(), path)
+
+	key := prefixKey(c.prefix, path)
+	c.logf(7, "PutObject %s %s", c.bucket, key)
+	_, err := s3manager.NewUploaderWithClient(c.s3client()).Upload(&s3manager.UploadInput{
+		Bucket: aws.String(c.bucket),
+		Key:    aws.String(key),
+		Body:   buffer(wt),
+	})
+	if err != nil {
+		c.logf(4, "S3: %s %s", remoteAddr.String(), err)
+		return err
+	}
+
+	return nil
+}
+
 func getUDPConn() (*net.UDPConn, error) {
 	conns, err := activation.PacketConns()
 	if err != nil {
@@ -127,7 +155,7 @@ func main() {
 	}
 	config.logf(5, "Listening on %s", conn.LocalAddr().String())
 
-	server := tftp.NewServer(config.handleRead, nil)
+	server := tftp.NewServer(config.handleRead, config.handleWrite)
 	server.SetTimeout(time.Duration(config.Timeout) * time.Millisecond)
 	server.SetRetries(config.Retries)
 

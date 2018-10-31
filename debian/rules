@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-export DH_OPTIONS = -v
+# export DH_OPTIONS = -v
 
 %:
 	dh $@

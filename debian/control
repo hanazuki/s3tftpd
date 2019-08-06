@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Kasumi Hanazuki <kasumi@rollingapple.net>
 Build-Depends:
   debhelper (>= 11),
-  golang-any
+  golang-any (>= 2:1.11~)
 Standards-Version: 4.1.4
 Vcs-Git: git://github.com/hanazuki/s3tftpd
 Vcs-Browser: https://github.com/hanazuki/s3tftpd

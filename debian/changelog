@@ -1,8 +1,8 @@
-s3tftpd (0.2) UNRELEASED; urgency=medium
+s3tftpd (0.2) unstable; urgency=medium
 
   * Build depends golang-any >= 1.11.
 
- -- Kasumi Hanazuki <kasumi@rollingapple.net>  Tue, 06 Aug 2019 13:40:41 +0000
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Thu, 24 Oct 2019 04:48:22 +0000
 
 s3tftpd (0.1) unstable; urgency=medium
 

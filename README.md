@@ -16,4 +16,4 @@ Because of the nature of TFTP `s3tftpd` has no mechanisms of client authenticati
 
 ## Docker container
 
-Prebuilt container images are available at [Docker Hub](https://hub.docker.com/r/hanazuki/s3tftpd). Versioned tags are available and `latest` is an alias for the latest tagged release.
+Prebuilt container images are available at [Docker Hub](https://hub.docker.com/r/hanazuki/s3tftpd). Available tags are `latest` (the latest release), `testing` (master branch), and each versioned release.

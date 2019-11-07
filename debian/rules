@@ -1,6 +1,9 @@
 #!/usr/bin/make -f
 # export DH_OPTIONS = -v
 
+export GOFLAGS=-mod=vendor
+export GOCACHE=/tmp/go-build
+
 %:
 	dh $@
 

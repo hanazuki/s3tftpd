@@ -1,12 +1,17 @@
 export GO111MODULE=on
 
+GOCMD = go
+RM = rm
+INSTALL = install
+DESTDIR =
+
 all:
-	go build
+	${GOCMD} build
 
 install:
-	install -D -t ${DESTDIR}/usr/sbin s3tftpd
+	${INSTALL} -D -t ${DESTDIR}/usr/sbin s3tftpd
 
 clean:
-	rm -f s3tftpd
+	${RM} -f s3tftpd
 
 .PHONY: all install clean

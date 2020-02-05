@@ -1,6 +1,7 @@
 s3tftpd (0.2.2) UNRELEASED; urgency=medium
 
   * Makefile: Respect INSTALL variable
+  * Update dependencies.
 
  -- Kasumi Hanazuki <kasumi@rollingapple.net>  Thu, 07 Nov 2019 05:03:38 +0000
 

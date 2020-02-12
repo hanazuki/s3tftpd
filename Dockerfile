@@ -1,16 +1,23 @@
-FROM golang:1.11 as builder
+# syntax = docker/dockerfile:experimental
 
-WORKDIR /go/src/github.com/hanazuki/s3tftpd
+FROM debian:buster as builder
+RUN apt-get update -qq && apt-get install -y --no-install-recommends devscripts equivs git
+
+WORKDIR /tmp/build/src
+COPY debian/control debian/
+RUN yes | mk-build-deps -i
+
 COPY . .
+RUN --mount=type=cache,target=/root/go/pkg/mod go mod vendor
+RUN debuild -us -uc
 
-ENV GO111MODULE=on
-RUN go build
+FROM debian:buster
+RUN apt-get update -qq && apt-get install -y --no-install-recommends systemd
 
-FROM debian:stretch
-RUN apt-get update -qq && apt-get install -y --no-install-recommends systemd && apt-get clean && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /go/src/github.com/hanazuki/s3tftpd/s3tftpd /usr/local/bin
+RUN --mount=type=bind,target=/tmp/build,source=/tmp/build,from=builder apt-get install -y /tmp/build/*.deb
+
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
 EXPOSE 69/udp
-ENTRYPOINT ["/docker-entrypoint.sh"]

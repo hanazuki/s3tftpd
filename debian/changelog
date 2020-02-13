@@ -1,10 +1,10 @@
-s3tftpd (0.2.2) UNRELEASED; urgency=medium
+s3tftpd (0.2.2) unstable; urgency=medium
 
   * Makefile: Respect INSTALL variable
   * Update dependencies.
   * systemd: s3tftpd.service after network.target
 
- -- Kasumi Hanazuki <kasumi@rollingapple.net>  Thu, 07 Nov 2019 05:03:38 +0000
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Thu, 13 Feb 2020 08:20:05 +0000
 
 s3tftpd (0.2.1) unstable; urgency=medium
 

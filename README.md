@@ -4,6 +4,8 @@
 
 ## Usage
 
+`s3tftpd` expects to receive a file descriptor for a UDP socket from the system manager (e.g. systemd). If you are not using a compatible system manager, you can use [`systemd-socket-activate(1)`](https://www.freedesktop.org/software/systemd/man/systemd-socket-activate.html) to pass an FD to `s3tftpd`.
+
 ```
 systemd-socket-activate -d -l 69 s3tftpd s3://your-bucket-name/prefix/
 ```

@@ -2,7 +2,7 @@
 Description=S3-backed TFTP server
 Documentation=https://github.com/hanazuki/s3tftpd
 Requires=s3tftpd.socket
-After=s3tftpd.socket
+After=s3tftpd.socket network.target
 
 [Service]
 Type=notify

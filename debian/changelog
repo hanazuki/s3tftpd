@@ -1,3 +1,9 @@
+s3tftpd (0.2.3) UNRELEASED; urgency=medium
+
+  * Package using dh-golang to populate Built-Using field
+
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Thu, 20 Feb 2020 13:16:18 +0000
+
 s3tftpd (0.2.2) unstable; urgency=medium
 
   * Makefile: Respect INSTALL variable

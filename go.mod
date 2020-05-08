@@ -4,9 +4,9 @@ require (
 	github.com/aws/aws-sdk-go v1.28.10
 	github.com/coreos/go-systemd v0.0.0-20181012123002-c6f51f82210d
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/pin/tftp v2.1.0+incompatible
-	github.com/stretchr/testify v1.4.0 // indirect
-	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
+	github.com/pin/tftp v0.0.0-20200229063000-e4f073737eb2
+	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f // indirect
+	golang.org/x/sys v0.0.0-20200501145240-bc7a7d42d5c3 // indirect
 )
 
 go 1.13

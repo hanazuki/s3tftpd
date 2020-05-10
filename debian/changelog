@@ -1,7 +1,7 @@
-s3tftpd (0.2.3) UNRELEASED; urgency=medium
+s3tftpd (0.3.0) UNRELEASED; urgency=medium
 
+  * Log transfer completion
   * Update dependencies
-  * Standards-Version: 4.5.0 (no changes)
 
  -- Kasumi Hanazuki <kasumi@rollingapple.net>  Fri, 08 May 2020 09:08:30 +0000
 

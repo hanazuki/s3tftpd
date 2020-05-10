@@ -76,7 +76,6 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		c.logf(4, "S3: %s %s", remoteAddr.String(), err)
 		return err
 	}
 	defer ret.Body.Close()
@@ -110,11 +109,27 @@ func (c *Config) handleWrite(path string, wt io.WriterTo) error {
 		Body:   buffer(wt),
 	})
 	if err != nil {
-		c.logf(4, "S3: %s %s", remoteAddr.String(), err)
 		return err
 	}
 
 	return nil
+}
+
+type hook struct {
+	*Config
+}
+
+func (h hook) OnSuccess(result tftp.TransferStats) {
+	addr := net.UDPAddr{IP: result.RemoteAddr, Port: result.Tid}
+	h.logf(6, "FIN %s %s", addr.String(), result.Filename)
+}
+func (h hook) OnFailure(result tftp.TransferStats, err error) {
+	addr := net.UDPAddr{IP: result.RemoteAddr, Port: result.Tid}
+	h.logf(4, "ERR %s %s: %s", addr.String(), result.Filename, err.Error())
+}
+
+func (c *Config) hooks() hook {
+	return hook{c}
 }
 
 func getUDPConn() (*net.UDPConn, error) {
@@ -174,6 +189,7 @@ func main() {
 	server := tftp.NewServer(config.handleRead, config.handleWrite)
 	server.SetTimeout(time.Duration(config.Timeout) * time.Millisecond)
 	server.SetRetries(config.Retries)
+	server.SetHook(config.hooks())
 
 	sigch := make(chan os.Signal, 1)
 	signal.Notify(

@@ -1,0 +1,43 @@
+name: Test
+
+on:
+  push:
+    branches: '*'
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up ruby
+      uses: ruby/setup-ruby@v1
+    - uses: actions/cache@v1
+      with:
+        path: vendor/bundle
+        key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-gem-
+    - name: Prepare
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y tftp-hpa
+    - name: Install
+      run: |
+        bundle config set deployment true
+        bundle config set path vendor/bundle
+        bundle install --jobs 4 --retry 3
+    - name: Build
+      run: |
+        make
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+        aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+        aws-region: us-east-2
+    - name: Test
+      run: |
+        bundle exec rspec
+      env:
+        TEST_BUCKET_NAME: hanazuki-s3tftpd-test

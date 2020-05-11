@@ -21,7 +21,8 @@ jobs:
     - name: Prepare
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -y tftp-hpa
+        sudo apt-get install -y --no-install-recommends tftp-hpa git-buildpackage equivs
+        sudo mk-build-deps -i
     - name: Install
       run: |
         bundle config set deployment true
@@ -29,7 +30,7 @@ jobs:
         bundle install --jobs 4 --retry 3
     - name: Build
       run: |
-        make
+        gbp buildpackage -us -uc
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:

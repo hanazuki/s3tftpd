@@ -132,7 +132,7 @@ func (c *Config) hooks() hook {
 	return hook{c}
 }
 
-func getUDPConn() (*net.UDPConn, error) {
+func getConn() (net.PacketConn, error) {
 	conns, err := activation.PacketConns()
 	if err != nil {
 		return nil, err
@@ -140,11 +140,10 @@ func getUDPConn() (*net.UDPConn, error) {
 	if len(conns) < 1 {
 		return nil, errors.New("No datagram socket passed by system manager")
 	}
-	conn, ok := conns[0].(*net.UDPConn)
-	if !ok {
-		return nil, errors.New("FD passed by system manager is not a UDP socket")
+	for _, c := range conns[1:] {
+		c.Close();
 	}
-	return conn, nil
+	return conns[0], nil
 }
 
 func parseArgs() (config Config, err error) {
@@ -179,7 +178,7 @@ func main() {
 	}
 	config.session = session
 
-	conn, err := getUDPConn()
+	conn, err := getConn()
 	if err != nil {
 		config.log(2, err)
 		os.Exit(1)

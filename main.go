@@ -16,8 +16,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/coreos/go-systemd/activation"
-	"github.com/coreos/go-systemd/daemon"
+	"github.com/coreos/go-systemd/v22/activation"
+	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/jessevdk/go-flags"
 	"github.com/pin/tftp"
 )

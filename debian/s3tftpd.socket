@@ -1,9 +1,1 @@
-[Unit]
-Description=S3-backed TFTP server (UDP socket)
-Documentation=https://github.com/hanazuki/s3tftpd
-
-[Socket]
-ListenDatagram=69
-
-[Install]
-WantedBy=sockets.target
+../systemd/s3tftpd.socket

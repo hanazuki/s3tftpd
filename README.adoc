@@ -1,0 +1,49 @@
+= s3tftpd(1)
+Kasumi Hanazuki
+:doctype: manpage
+:mansource: github.com/hanazuki/s3tftpd
+
+== Name
+
+s3tftpd - S3-backed TFTP server
+
+== Synopsis
+
+*s3tftpd* [_OPTION_]... s3://__BUCKET__[/__PREFIX__]
+
+== Description
+
+`s3tftpd` serves files on Amazon S3 via TFTP protocol, supporting both RRQ and WRQ.
+
+`s3tftpd` expects to receive a file descriptor for a UDP socket from the system manager (e.g. systemd). If you are not using a compatible system manager, you can use https://www.freedesktop.org/software/systemd/man/systemd-socket-activate.html[`systemd-socket-activate(1)`] to pass an FD to `s3tftpd`.
+
+```
+systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
+```
+
+== Options
+
+*-h*, *--help*::
+  Prints help message.
+
+*-t*, *--timeout*=_MSEC_::
+  Timeout in milliseconds before the server retransmits a packet.
+
+*-r*, *--retries*=_COUNT_::
+  Number of retransmissions before the server disconnect the session.
+
+*--no-dualstack*::
+  Disables S3 dualstack endpoint.
+
+*--debug-api*::
+  Enables logging AWS API calls.
+
+== Security
+
+`s3tftpd` retrieves AWS credentials from the `AWS_*` environment variables, shared profile file or EC2/ECS role.
+Because of the nature of TFTP `s3tftpd` has no mechanisms of client authentication. Access controls on the objects should be enforced using IAM Policies and S3 Bucket Policies.
+
+
+== Docker container
+
+Prebuilt container images are available at https://hub.docker.com/r/hanazuki/s3tftpd[Docker Hub]. Available tags are `latest` (the latest release), `testing` (master branch), and each versioned release.

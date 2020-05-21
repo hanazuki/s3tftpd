@@ -11,7 +11,7 @@ all:
 
 install:
 	${INSTALL} -D -s -t ${DESTDIR}/usr/sbin s3tftpd
-	${INSTALL} -D -t ${DESTDIR}/usr/share/man/man1 man/*.1
+	${INSTALL} -D -t ${DESTDIR}/usr/share/man/man8 man/*.8
 
 clean:
 	${RM} -f s3tftpd

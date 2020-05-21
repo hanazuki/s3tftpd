@@ -1,4 +1,4 @@
-= s3tftpd(1)
+= s3tftpd(8)
 Kasumi Hanazuki
 :doctype: manpage
 :mansource: github.com/hanazuki/s3tftpd

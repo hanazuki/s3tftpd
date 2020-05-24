@@ -141,7 +141,7 @@ func getConn() (net.PacketConn, error) {
 		return nil, errors.New("No datagram socket passed by system manager")
 	}
 	for _, c := range conns[1:] {
-		c.Close();
+		c.Close()
 	}
 	return conns[0], nil
 }

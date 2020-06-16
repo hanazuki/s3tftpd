@@ -31,6 +31,7 @@ type Config struct {
 	Retries     int  `short:"r" long:"retries" default:"5" description:"Number of retransmissions before the server disconnect the session"`
 	NoDualStack bool `long:"no-dualstack" description:"Disable S3 dualstack endpoint"`
 	DebugApi    bool `long:"debug-api" env:"AWS_DEBUG" description:"Enable logging AWS API calls"`
+	SinglePort  bool `long:"single-port" description:"Serve all connections on a single UDP socket (experimental)"`
 
 	bucket  string
 	prefix  string
@@ -189,6 +190,9 @@ func main() {
 	server.SetTimeout(time.Duration(config.Timeout) * time.Millisecond)
 	server.SetRetries(config.Retries)
 	server.SetHook(config.hooks())
+	if config.SinglePort {
+		server.EnableSinglePort()
+	}
 
 	sigch := make(chan os.Signal, 1)
 	signal.Notify(

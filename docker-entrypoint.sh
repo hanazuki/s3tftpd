@@ -23,4 +23,4 @@ while IFS= read -r -d $'\0' env; do
     fi
 done < <(printenv -0)
 
-exec /usr/bin/systemd-socket-activate "${args[@]}" s3tftpd "$@"
+exec /usr/bin/systemd-socket-activate "${args[@]}" s3tftpd --single-port "$@"

@@ -1,4 +1,4 @@
-s3tftpd (0.3.0) UNRELEASED; urgency=medium
+s3tftpd (0.3.0) unstable; urgency=medium
 
   * Log transfer completion
   * Update dependencies
@@ -7,7 +7,7 @@ s3tftpd (0.3.0) UNRELEASED; urgency=medium
   * Add --single-port experimental option to instruct s3tftpd to use a single
     UDP port, which may be useful when running behind NAT.
 
- -- Kasumi Hanazuki <kasumi@rollingapple.net>  Fri, 08 May 2020 09:08:30 +0000
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Tue, 16 Jun 2020 17:37:52 +0000
 
 s3tftpd (0.2.2) unstable; urgency=medium
 

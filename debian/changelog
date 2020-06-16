@@ -4,8 +4,8 @@ s3tftpd (0.3.0) UNRELEASED; urgency=medium
   * Update dependencies
   * Package using dh-golang to populate Built-Using field
   * Add manpage
-  * Add --single-port experimental option to instruct s3tftpd to use a single UDP port,
-    which may be useful when running behind NAT.
+  * Add --single-port experimental option to instruct s3tftpd to use a single
+    UDP port, which may be useful when running behind NAT.
 
  -- Kasumi Hanazuki <kasumi@rollingapple.net>  Fri, 08 May 2020 09:08:30 +0000
 

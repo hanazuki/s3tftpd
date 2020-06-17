@@ -42,8 +42,11 @@ type Config struct {
 func (c *Config) awsConfig() *aws.Config {
 	awsConfig := defaults.Get().Config.
 		WithUseDualStack(!c.NoDualStack).
-		WithLogLevel(c.awsLogLevel()).
-		WithRegion(c.Region)
+		WithLogLevel(c.awsLogLevel())
+
+	if c.Region != "" {
+		awsConfig = awsConfig.WithRegion(c.Region)
+	}
 
 	return awsConfig
 }

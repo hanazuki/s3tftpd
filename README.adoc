@@ -53,3 +53,8 @@ Because of the nature of TFTP `s3tftpd` has no mechanisms of client authenticati
 == Docker container
 
 Prebuilt container images are available at https://hub.docker.com/r/hanazuki/s3tftpd[Docker Hub]. Available tags are `latest` (the latest release), `testing` (master branch), and each versioned release.
+
+Example invocation:
+```
+docker run -e AWS_REGION=region -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY hanazuki/s3tftpd:latest s3://bucket/prefix/
+```

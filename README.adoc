@@ -23,6 +23,9 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 
 == Options
 
+*--region*::
+  Specifies the AWS region where the S3 bucket resides.
+
 *-r*, *--retries*=_COUNT_::
   Number of retransmissions before the server disconnect the session. Default: 5
 
@@ -56,5 +59,5 @@ Prebuilt container images are available at https://hub.docker.com/r/hanazuki/s3t
 
 Example invocation:
 ```
-docker run -e AWS_REGION=region -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY hanazuki/s3tftpd:latest s3://bucket/prefix/
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY hanazuki/s3tftpd:latest --region=region s3://bucket/prefix/
 ```

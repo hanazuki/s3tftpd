@@ -1,3 +1,9 @@
+s3tftpd (0.3.1) UNRELEASED; urgency=medium
+
+  * Add --region options to specify AWS region
+
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Wed, 17 Jun 2020 10:20:23 +0000
+
 s3tftpd (0.3.0) unstable; urgency=medium
 
   * Log transfer completion

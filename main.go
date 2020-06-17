@@ -26,12 +26,13 @@ type Config struct {
 	Args struct {
 		S3uri string `positional-arg-name:"S3URI"`
 	} `positional-args:"true" required:"true"`
-	Verbosity   int  `short:"v" long:"verbosity" default:"7" description:"Verbosity level for logging (0..8)"`
-	Timeout     int  `short:"t" long:"timeout" default:"5000" description:"Timeout in milliseconds before the server retransmits a packet"`
-	Retries     int  `short:"r" long:"retries" default:"5" description:"Number of retransmissions before the server disconnect the session"`
-	NoDualStack bool `long:"no-dualstack" description:"Disable S3 dualstack endpoint"`
-	DebugApi    bool `long:"debug-api" env:"AWS_DEBUG" description:"Enable logging AWS API calls"`
-	SinglePort  bool `long:"single-port" description:"Serve all connections on a single UDP socket (experimental)"`
+	Region      string `long:"region" description:"AWS region where the bucket resides"`
+	Verbosity   int    `short:"v" long:"verbosity" default:"7" description:"Verbosity level for logging (0..8)"`
+	Timeout     int    `short:"t" long:"timeout" default:"5000" description:"Timeout in milliseconds before the server retransmits a packet"`
+	Retries     int    `short:"r" long:"retries" default:"5" description:"Number of retransmissions before the server disconnect the session"`
+	NoDualStack bool   `long:"no-dualstack" description:"Disable S3 dualstack endpoint"`
+	DebugApi    bool   `long:"debug-api" env:"AWS_DEBUG" description:"Enable logging AWS API calls"`
+	SinglePort  bool   `long:"single-port" description:"Serve all connections on a single UDP socket (experimental)"`
 
 	bucket  string
 	prefix  string
@@ -39,9 +40,12 @@ type Config struct {
 }
 
 func (c *Config) awsConfig() *aws.Config {
-	return defaults.Get().Config.
+	awsConfig := defaults.Get().Config.
 		WithUseDualStack(!c.NoDualStack).
-		WithLogLevel(c.awsLogLevel())
+		WithLogLevel(c.awsLogLevel()).
+		WithRegion(c.Region)
+
+	return awsConfig
 }
 
 func (c *Config) awsLogLevel() aws.LogLevelType {

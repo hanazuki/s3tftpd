@@ -5,8 +5,12 @@ RM = rm
 INSTALL = install
 DESTDIR =
 
-all:
+all: build man
+
+build:
 	${GOCMD} build
+
+man:
 	asciidoctor -b manpage man/*.adoc
 
 install:
@@ -17,4 +21,4 @@ clean:
 	${RM} -f s3tftpd
 	${RM} -f man/*.1
 
-.PHONY: all install clean
+.PHONY: all man install clean

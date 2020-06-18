@@ -15,7 +15,8 @@ XS-Go-Import-Path: github.com/hanazuki/s3tftpd
 
 Package: s3tftpd
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends},
+  ca-certificates
 Built-Using: ${misc:Built-Using}
 Description: S3-backed TFTP server
  s3tftpd serves files from Amazon S3 to TFTP clients

@@ -15,7 +15,7 @@ RUN debuild -us -uc
 FROM debian:buster
 RUN --mount=type=bind,target=/tmp/build,source=/tmp/build,from=builder \
     apt-get update -qq && \
-    apt-get install -y --no-install-recommends systemd /tmp/build/*.deb && \
+    apt-get install -y --no-install-recommends dumb-init systemd /tmp/build/*.deb && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY docker-entrypoint.sh /

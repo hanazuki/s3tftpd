@@ -1,6 +1,8 @@
 # syntax = docker/dockerfile:experimental
 
 FROM debian:buster as builder
+RUN echo "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/backports.list
+RUN (echo "Package: dh-*"; echo "Pin: release a=buster-backports"; echo "Pin-Priority: 500") > /etc/apt/preferences.d/99debhelper
 RUN apt-get update -qq && apt-get install -y --no-install-recommends devscripts equivs git
 
 WORKDIR /tmp/build/src

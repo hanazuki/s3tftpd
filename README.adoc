@@ -1,0 +1,60 @@
+= s3tftpd(8)
+Kasumi Hanazuki
+:doctype: manpage
+:mansource: github.com/hanazuki/s3tftpd
+
+== Name
+
+s3tftpd - S3-backed TFTP server
+
+== Synopsis
+
+*s3tftpd* [_OPTION_]... s3://__BUCKET__[/__PREFIX__]
+
+== Description
+
+`s3tftpd` serves files on Amazon S3 via TFTP protocol, supporting both RRQ and WRQ.
+
+`s3tftpd` expects to receive a file descriptor for a UDP socket from the system manager (e.g. systemd). If you are not using a compatible system manager, you can use https://www.freedesktop.org/software/systemd/man/systemd-socket-activate.html[`systemd-socket-activate(1)`] to pass an FD to `s3tftpd`.
+
+```
+systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
+```
+
+== Options
+
+*-r*, *--retries*=_COUNT_::
+  Number of retransmissions before the server disconnect the session. Default: 5
+
+*-t*, *--timeout*=_MSEC_::
+  Timeout in milliseconds before the server retransmits a packet. Default: 5000
+
+*--no-dualstack*::
+  Disables S3 dualstack endpoint.
+
+*--debug-api*::
+  Enables logging AWS API calls.
+
+*--single-port*::
+  [experimantal] Tells s3tftpd to use a single port for all the connections. By default, s3tftpd responds each request with a random source port as defined by the protocol standard. But packets from random port is often blocked by firewalls or NAT gateways between the client and the server. When this flag is set, s3tftpd responds back with the same port as it listens for the incoming requests, so that the response packet is likely allowed by the firewalls.
+
+*-v*, *--verbosity*=_0-8_::
+  Sets the verbosity level. 0 logs nothing, 8 logs everything. Default: 7 (suppresses debug logging)
+
+*-h*, *--help*::
+  Prints help message.
+
+== Security
+
+`s3tftpd` retrieves AWS credentials from the https://docs.aws.amazon.com/sdk-for-go/api/aws/session/#hdr-Environment_Variables[`AWS_*` environment variables], shared profile file or EC2/ECS role.
+Because of the nature of TFTP `s3tftpd` has no mechanisms of client authentication. Access controls on the objects should be enforced using IAM Policies and S3 Bucket Policies.
+
+
+== Docker container
+
+Prebuilt container images are available at https://hub.docker.com/r/hanazuki/s3tftpd[Docker Hub]. Available tags are `latest` (the latest release), `testing` (master branch), and each versioned release.
+
+Example invocation:
+```
+docker run -e AWS_REGION=region -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY hanazuki/s3tftpd:latest s3://bucket/prefix/
+```

@@ -11,4 +11,16 @@ if [[ ${1-} == /* ]]; then
     exec "$@"
 fi
 
-exec /usr/bin/systemd-socket-activate -d -l "${S3TFTPD_LISTEN_PORT}" s3tftpd "$@"
+if [[ ${1-} == s3tftpd ]]; then
+    shift
+fi
+
+args=(-d -l "${S3TFTPD_LISTEN_PORT}")
+while IFS= read -r -d $'\0' env; do
+    env="$(cut -d= -f1 <<<"$env")"
+    if [[ "$env" == AWS_* ]]; then
+        args+=(-E "$env")
+    fi
+done < <(printenv -0)
+
+exec /usr/bin/systemd-socket-activate "${args[@]}" s3tftpd --single-port "$@"

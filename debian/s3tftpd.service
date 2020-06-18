@@ -1,15 +1,1 @@
-[Unit]
-Description=S3-backed TFTP server
-Documentation=https://github.com/hanazuki/s3tftpd
-Requires=s3tftpd.socket
-After=s3tftpd.socket
-
-[Service]
-Type=notify
-DynamicUser=on
-EnvironmentFile=/etc/default/s3tftpd
-ExecStart=/usr/sbin/s3tftpd $S3_URI
-KillSignal=SIGQUIT
-
-[Install]
-WantedBy=multi-user.target
+../systemd/s3tftpd.service

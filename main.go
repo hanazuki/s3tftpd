@@ -16,8 +16,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/coreos/go-systemd/activation"
-	"github.com/coreos/go-systemd/daemon"
+	"github.com/coreos/go-systemd/v22/activation"
+	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/jessevdk/go-flags"
 	"github.com/pin/tftp"
 )
@@ -31,6 +31,7 @@ type Config struct {
 	Retries     int  `short:"r" long:"retries" default:"5" description:"Number of retransmissions before the server disconnect the session"`
 	NoDualStack bool `long:"no-dualstack" description:"Disable S3 dualstack endpoint"`
 	DebugApi    bool `long:"debug-api" env:"AWS_DEBUG" description:"Enable logging AWS API calls"`
+	SinglePort  bool `long:"single-port" description:"Serve all connections on a single UDP socket (experimental)"`
 
 	bucket  string
 	prefix  string
@@ -76,7 +77,6 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		c.logf(4, "S3: %s %s", remoteAddr.String(), err)
 		return err
 	}
 	defer ret.Body.Close()
@@ -110,14 +110,30 @@ func (c *Config) handleWrite(path string, wt io.WriterTo) error {
 		Body:   buffer(wt),
 	})
 	if err != nil {
-		c.logf(4, "S3: %s %s", remoteAddr.String(), err)
 		return err
 	}
 
 	return nil
 }
 
-func getUDPConn() (*net.UDPConn, error) {
+type hook struct {
+	*Config
+}
+
+func (h hook) OnSuccess(result tftp.TransferStats) {
+	addr := net.UDPAddr{IP: result.RemoteAddr, Port: result.Tid}
+	h.logf(6, "FIN %s %s", addr.String(), result.Filename)
+}
+func (h hook) OnFailure(result tftp.TransferStats, err error) {
+	addr := net.UDPAddr{IP: result.RemoteAddr, Port: result.Tid}
+	h.logf(4, "ERR %s %s: %s", addr.String(), result.Filename, err.Error())
+}
+
+func (c *Config) hooks() hook {
+	return hook{c}
+}
+
+func getConn() (net.PacketConn, error) {
 	conns, err := activation.PacketConns()
 	if err != nil {
 		return nil, err
@@ -125,11 +141,10 @@ func getUDPConn() (*net.UDPConn, error) {
 	if len(conns) < 1 {
 		return nil, errors.New("No datagram socket passed by system manager")
 	}
-	conn, ok := conns[0].(*net.UDPConn)
-	if !ok {
-		return nil, errors.New("FD passed by system manager is not a UDP socket")
+	for _, c := range conns[1:] {
+		c.Close()
 	}
-	return conn, nil
+	return conns[0], nil
 }
 
 func parseArgs() (config Config, err error) {
@@ -164,7 +179,7 @@ func main() {
 	}
 	config.session = session
 
-	conn, err := getUDPConn()
+	conn, err := getConn()
 	if err != nil {
 		config.log(2, err)
 		os.Exit(1)
@@ -174,6 +189,10 @@ func main() {
 	server := tftp.NewServer(config.handleRead, config.handleWrite)
 	server.SetTimeout(time.Duration(config.Timeout) * time.Millisecond)
 	server.SetRetries(config.Retries)
+	server.SetHook(config.hooks())
+	if config.SinglePort {
+		server.EnableSinglePort()
+	}
 
 	sigch := make(chan os.Signal, 1)
 	signal.Notify(

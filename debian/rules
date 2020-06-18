@@ -1,14 +1,18 @@
 #!/usr/bin/make -f
-# export DH_OPTIONS = -v
+export DH_OPTIONS
 
+export GO111MODULE=on
 export GOFLAGS=-mod=vendor
-export GOCACHE=/tmp/go-build
 
 %:
-	dh $@
+	dh $@ --with=golang
 
 override_dh_auto_install:
 	dh_auto_install --destdir=debian/tmp
+
+override_dh_installdocs:
+	debian/gennotice.sh >debian/tmp/NOTICE
+	dh_installdocs debian/tmp/NOTICE
 
 override_dh_installsystemd:
 	dh_installsystemd s3tftpd.socket

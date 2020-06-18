@@ -3,15 +3,19 @@ Section: net
 Priority: optional
 Maintainer: Kasumi Hanazuki <kasumi@rollingapple.net>
 Build-Depends:
-  debhelper (>= 11),
-  golang-any (>= 2:1.11~)
-Standards-Version: 4.4.1
-Vcs-Git: git://github.com/hanazuki/s3tftpd
+  debhelper-compat (= 11),
+  dh-golang,
+  golang-any (>= 2:1.11~),
+  asciidoctor
+Standards-Version: 4.5.0
+Vcs-Git: http://github.com/hanazuki/s3tftpd
 Vcs-Browser: https://github.com/hanazuki/s3tftpd
 Homepage: https://github.com/hanazuki/s3tftpd
+XS-Go-Import-Path: github.com/hanazuki/s3tftpd
 
 Package: s3tftpd
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Built-Using: ${misc:Built-Using}
 Description: S3-backed TFTP server
  s3tftpd serves files from Amazon S3 to TFTP clients

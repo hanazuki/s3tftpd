@@ -1,6 +1,7 @@
 # syntax = docker/dockerfile:experimental
 
 FROM debian:buster as builder
+# https://salsa.debian.org/go-team/packages/dh-golang/-/commit/61b0829ad608be1aa23630e9d8f9d76ded3eca65
 RUN echo "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/backports.list
 RUN (echo "Package: dh-*"; echo "Pin: release a=buster-backports"; echo "Pin-Priority: 500") > /etc/apt/preferences.d/99debhelper
 RUN apt-get update -qq && apt-get install -y --no-install-recommends devscripts equivs git

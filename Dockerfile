@@ -1,16 +1,23 @@
-FROM golang:1.14 as builder
+# syntax = docker/dockerfile:experimental
 
-WORKDIR /build
+FROM debian:buster as builder
+RUN echo "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/backports.list
+RUN (echo "Package: dh-*"; echo "Pin: release a=buster-backports"; echo "Pin-Priority: 500") > /etc/apt/preferences.d/99debhelper
+RUN apt-get update -qq && apt-get install -y --no-install-recommends devscripts equivs git
+
+WORKDIR /tmp/build/src
+COPY debian/control debian/
+RUN yes | mk-build-deps -i
 COPY . .
-
-RUN go build
+RUN --mount=type=cache,target=/root/go/pkg/mod go mod vendor
+RUN debuild -us -uc
 
 FROM debian:buster
-RUN apt-get update -qq && \
-    apt-get install -y --no-install-recommends ca-certificates dumb-init systemd && \
+RUN --mount=type=bind,target=/tmp/build,source=/tmp/build,from=builder \
+    apt-get update -qq && \
+    apt-get install -y --no-install-recommends dumb-init systemd /tmp/build/*.deb && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /build/s3tftpd /usr/local/bin
-COPY debian/copyright /
+
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
 

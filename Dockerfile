@@ -1,5 +1,7 @@
 # syntax = docker/dockerfile:experimental
 
+ARG SOURCE_COMMIT
+
 FROM debian:buster as builder
 # https://salsa.debian.org/go-team/packages/dh-golang/-/commit/61b0829ad608be1aa23630e9d8f9d76ded3eca65
 RUN echo "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/backports.list
@@ -24,3 +26,5 @@ RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 69/udp
 ENTRYPOINT ["dumb-init", "/docker-entrypoint.sh"]
+
+RUN echo "$SOURCE_COMMIT" > /REVISION

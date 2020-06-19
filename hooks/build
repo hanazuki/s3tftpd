@@ -2,4 +2,4 @@
 set -eux
 
 export DOCKER_BUILDKIT=1
-docker build -f "$DOCKERFILE_PATH" -t "$IMAGE_NAME" .
+docker build -f "$DOCKERFILE_PATH" -t "$IMAGE_NAME" --build-arg SOURCE_COMMIT .

@@ -19,6 +19,6 @@ install:
 
 clean:
 	${RM} -f s3tftpd
-	${RM} -f man/*.1
+	${RM} -f man/*.8
 
 .PHONY: all man install clean

@@ -6,6 +6,11 @@ Files: *
 Copyright: 2018 Kasumi Hanazuki <kasumi@rollingapple.net>
 License: MIT
 
+Files: vendor/github.com/alecthomas/kong/*
+Copyright:
+ Copyright (C) 2018 Alec Thomas
+License: MIT
+
 Files: vendor/github.com/aws/aws-sdk-go/*
 Copyright:
  Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -22,11 +27,6 @@ Copyright:
  Copyright 2018 CoreOS, Inc
 License: Apache-2.0
 
-Files: vendor/github.com/jessevdk/go-flags/*
-Copyright:
- Copyright (c) 2012 Jesse van den Kieboom. All rights reserved.
-License: BSD-3-Clause-Google
-
 Files: vendor/github.com/jmespath/go-jmespath/*
 Copyright:
  Copyright 2015 James Saryerwinnie
@@ -36,6 +36,11 @@ Files: vendor/github.com/pin/tftp/*
 Copyright:
  Copyright (c) 2016 Dmitri Popov
 License: MIT
+
+Files: vendor/github.com/pkg/errors/*
+Copyright:
+ Copyright (c) 2015, Dave Cheney <dave@cheney.net>
+License: BSD-2-Clause
 
 Files: vendor/golang.org/x/net/*
 Copyright:

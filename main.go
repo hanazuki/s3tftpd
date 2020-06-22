@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/alecthomas/kong"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/defaults"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -18,21 +20,23 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/coreos/go-systemd/v22/activation"
 	"github.com/coreos/go-systemd/v22/daemon"
-	"github.com/jessevdk/go-flags"
 	"github.com/pin/tftp"
 )
 
+type Args struct {
+	S3uri url.URL `arg required name:"S3URI" help:"s3:// URI that identifies the target bucket and optional key prefix"`
+
+	Region      string `name:"region" help:"AWS region where the bucket resides" placeholder:"REGION"`
+	Retries     int    `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
+	Timeout     int    `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
+	NoDualStack bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
+	SinglePort  bool   `name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
+	Verbosity   int    `short:"v" name:"verbosity" default:"7" help:"Verbosity level for logging (0..8)"`
+	DebugApi    bool   `name:"debug-api" env:"AWS_DEBUG" help:"Enable logging AWS API calls"`
+}
+
 type Config struct {
-	Args struct {
-		S3uri string `positional-arg-name:"S3URI"`
-	} `positional-args:"true" required:"true"`
-	Region      string `long:"region" description:"AWS region where the bucket resides"`
-	Verbosity   int    `short:"v" long:"verbosity" default:"7" description:"Verbosity level for logging (0..8)"`
-	Timeout     int    `short:"t" long:"timeout" default:"5000" description:"Timeout in milliseconds before the server retransmits a packet"`
-	Retries     int    `short:"r" long:"retries" default:"5" description:"Number of retransmissions before the server disconnect the session"`
-	NoDualStack bool   `long:"no-dualstack" description:"Disable S3 dualstack endpoint"`
-	DebugApi    bool   `long:"debug-api" env:"AWS_DEBUG" description:"Enable logging AWS API calls"`
-	SinglePort  bool   `long:"single-port" description:"Serve all connections on a single UDP socket (experimental)"`
+	Args
 
 	bucket  string
 	prefix  string
@@ -155,12 +159,19 @@ func getConn() (net.PacketConn, error) {
 }
 
 func parseArgs() (config Config, err error) {
-	_, err = flags.Parse(&config)
+	parser, err := kong.New(&config.Args)
+	if err != nil {
+		panic(err)
+	}
+
+	parser.Model.HelpFlag.Short = 'h'
+
+	_, err = parser.Parse(os.Args[1:])
 	if err != nil {
 		return
 	}
 
-	config.bucket, config.prefix, err = parseS3uri(config.Args.S3uri)
+	config.bucket, config.prefix, err = parseS3uri(config.S3uri)
 	if err != nil {
 		return
 	}
@@ -171,12 +182,9 @@ func parseArgs() (config Config, err error) {
 func main() {
 	config, err := parseArgs()
 	if err != nil {
-		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {
-			os.Exit(0)
-		} else {
-			config.log(2, err)
-			os.Exit(1)
-		}
+		config.Verbosity = 7
+		config.log(2, err)
+		os.Exit(1)
 	}
 
 	session, err := session.NewSession()

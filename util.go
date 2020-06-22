@@ -22,12 +22,7 @@ func prefixKey(prefix, key string) string {
 	return normalizeKey(prefix) + normalizeKey(key)
 }
 
-func parseS3uri(rawuri string) (bucket, prefix string, err error) {
-	uri, err := url.Parse(rawuri)
-	if err != nil {
-		return
-	}
-
+func parseS3uri(uri url.URL) (bucket, prefix string, err error) {
 	if uri.Scheme != "s3" {
 		err = errors.New("S3URI must have 's3' scheme")
 		return

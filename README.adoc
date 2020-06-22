@@ -35,14 +35,14 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 *--no-dualstack*::
   Disables S3 dualstack endpoint.
 
-*--debug-api*::
-  Enables logging AWS API calls.
-
 *--single-port*::
   [experimantal] Tells s3tftpd to use a single port for all the connections. By default, s3tftpd responds each request with a random source port as defined by the protocol standard. But packets from random port is often blocked by firewalls or NAT gateways between the client and the server. When this flag is set, s3tftpd responds back with the same port as it listens for the incoming requests, so that the response packet is likely allowed by the firewalls.
 
 *-v*, *--verbosity*=_0-8_::
   Sets the verbosity level. 0 logs nothing, 8 logs everything. Default: 7 (suppresses debug logging)
+
+*--debug-api*::
+  Enables logging AWS API calls.
 
 *-h*, *--help*::
   Prints help message.

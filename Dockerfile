@@ -1,7 +1,5 @@
 # syntax = docker/dockerfile:experimental
 
-ARG SOURCE_COMMIT
-
 FROM debian:buster as builder
 # https://salsa.debian.org/go-team/packages/dh-golang/-/commit/61b0829ad608be1aa23630e9d8f9d76ded3eca65
 RUN echo "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/backports.list
@@ -16,6 +14,8 @@ RUN --mount=type=cache,target=/root/go/pkg/mod go mod vendor
 RUN debuild -us -uc
 
 FROM debian:buster
+ARG SOURCE_COMMIT
+
 RUN --mount=type=bind,target=/tmp/build,source=/tmp/build,from=builder \
     apt-get update -qq && \
     apt-get install -y --no-install-recommends dumb-init systemd /tmp/build/*.deb && \

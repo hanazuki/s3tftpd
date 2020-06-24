@@ -30,6 +30,7 @@ type Args struct {
 	Retries     int    `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
 	Timeout     int    `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
 	NoDualStack bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
+	Accelerate  bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
 	SinglePort  bool   `name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
 	Verbosity   int    `short:"v" name:"verbosity" default:"7" help:"Verbosity level for logging (0..8)"`
 	DebugApi    bool   `name:"debug-api" env:"AWS_DEBUG" help:"Enable logging AWS API calls"`
@@ -46,6 +47,7 @@ type Config struct {
 func (c *Config) awsConfig() *aws.Config {
 	awsConfig := defaults.Get().Config.
 		WithUseDualStack(!c.NoDualStack).
+		WithS3UseAccelerate(c.Accelerate).
 		WithLogLevel(c.awsLogLevel())
 
 	if c.Region != "" {

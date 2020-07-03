@@ -138,10 +138,12 @@ type hook struct {
 func (h hook) OnSuccess(result tftp.TransferStats) {
 	addr := net.UDPAddr{IP: result.RemoteAddr, Port: result.Tid}
 	h.logf(6, "FIN %s %s", addr.String(), result.Filename)
+	h.logf(7, "stats %v", result)
 }
 func (h hook) OnFailure(result tftp.TransferStats, err error) {
 	addr := net.UDPAddr{IP: result.RemoteAddr, Port: result.Tid}
 	h.logf(4, "ERR %s %s: %s", addr.String(), result.Filename, err.Error())
+	h.logf(7, "stats %v", result)
 }
 
 func (c *Config) hooks() hook {

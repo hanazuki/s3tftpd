@@ -29,6 +29,7 @@ type Args struct {
 	Region      string `name:"region" help:"AWS region where the bucket resides" placeholder:"REGION"`
 	Retries     int    `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
 	Timeout     int    `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
+	BlockSize   int    `short:"b" name:"blocksize" default:"512" help:"Maximum permitted block size in octets"`
 	NoDualStack bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
 	Accelerate  bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
 	SinglePort  bool   `name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
@@ -189,6 +190,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if sz := config.BlockSize; sz != 0 {
+		if sz < 512 || sz > 65464 {
+			config.log(2, "Block size is out of range (512..65464).")
+			os.Exit(1)
+		}
+	}
+
 	session, err := session.NewSession()
 	if err != nil {
 		config.log(2, err)
@@ -206,6 +214,7 @@ func main() {
 	server := tftp.NewServer(config.handleRead, config.handleWrite)
 	server.SetTimeout(time.Duration(config.Timeout) * time.Millisecond)
 	server.SetRetries(config.Retries)
+	server.SetBlockSize(config.BlockSize)
 	server.SetHook(config.hooks())
 	if config.SinglePort {
 		server.EnableSinglePort()

@@ -33,7 +33,7 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
   Timeout in milliseconds before the server retransmits a packet. Default: 5000
 
 *-b*, *--blocksize*=_OCTETS_::
-  Specifies maximum permitted block size. Actual block size is negotiated with the client by `blksize` extension (RFC 2348). Limitation: Maximum block size is clamped to the interface MTU minus header size. Default: 512
+  Specifies maximum permitted block size in octets. Actual block size is negotiated with the client by `blksize` extension (RFC 2348). Limitation: Maximum block size is clamped to the interface MTU minus header size. Default: 512
 
 *--anticipate*=_WINDOW-SIZE_::
   [experimental] Enables sender anticipation feature, in which the server sends at most _WINDOW-SIZE_ data blocks before waiting ACK packets from the client. It can improve download speed. Set 0 to disable the feature. Default: 0 (disabled).

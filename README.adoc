@@ -35,6 +35,9 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 *-b*, *--blocksize*=_OCTETS_::
   Specifies maximum permitted block size. Actual block size is negotiated with the client by `blksize` extension (RFC 2348). Limitation: Maximum block size is clamped to the interface MTU minus header size. Default: 512
 
+*--anticipate*=_WINDOW-SIZE_::
+  [experimental] Enables sender anticipation feature, in which the server sends at most _WINDOW-SIZE_ data blocks before waiting ACK packets from the client. It can improve download speed. Set 0 to disable the feature. Default: 0 (disabled).
+
 *--no-dualstack*::
   Disables S3 dualstack endpoint. s3tftpd, by default, uses the S3 dualstack endpoint so that it can communicate with S3 in either IPv4 or IPv6. Setting this flag forces s3tftpd to use IPv4 for the communication.
 

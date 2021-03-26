@@ -62,7 +62,7 @@ jobs:
           tags=ghcr.io/${GITHUB_REPOSITORY}:testing
         elif [[ $GITHUB_REF == refs/tags/v* ]]; then
           push=true
-          tags=ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF#refs/tags/v}
+          tags=ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF#refs/tags/v}%0Aghcr.io/${GITHUB_REPOSITORY}:latest
         else
           push=false
           tags=

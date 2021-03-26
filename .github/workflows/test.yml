@@ -57,15 +57,16 @@ jobs:
     - id: config
       shell: bash
       run: |
-        if [[ $GITHUB_REF == refs/heads/master ]]; then
-          push=true
-          tags=ghcr.io/${GITHUB_REPOSITORY}:testing
-        elif [[ $GITHUB_REF == refs/tags/v* ]]; then
-          push=true
-          tags=ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF#refs/tags/v}%0Aghcr.io/${GITHUB_REPOSITORY}:latest
-        else
-          push=false
-          tags=
+        push=false
+        tags=
+        if [[ $GITHUB_EVENT_NAME == push ]]; then
+          if [[ $GITHUB_REF == refs/heads/master ]]; then
+            push=true
+            tags=ghcr.io/${GITHUB_REPOSITORY}:testing
+          elif [[ $GITHUB_REF == refs/tags/v* ]]; then
+            push=true
+            tags=ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF#refs/tags/v}%0Aghcr.io/${GITHUB_REPOSITORY}:latest
+          fi
         fi
         echo "::set-output name=push::$push"
         echo "::set-output name=tags::$tags"

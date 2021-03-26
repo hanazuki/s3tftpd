@@ -14,10 +14,6 @@ RUN --mount=type=cache,target=/root/go/pkg/mod go mod vendor
 RUN debuild -us -uc
 
 FROM debian:buster
-LABEL org.opencontainers.image.source=https://github.com/hanazuki/s3tftpd
-
-ARG SOURCE_COMMIT
-
 RUN --mount=type=bind,target=/tmp/build,source=/tmp/build,from=builder \
     apt-get update -qq && \
     apt-get install -y --no-install-recommends dumb-init systemd /tmp/build/*.deb && \
@@ -28,5 +24,3 @@ RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 69/udp
 ENTRYPOINT ["dumb-init", "/docker-entrypoint.sh"]
-
-RUN echo "$SOURCE_COMMIT" > /REVISION

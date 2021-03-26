@@ -14,6 +14,8 @@ RUN --mount=type=cache,target=/root/go/pkg/mod go mod vendor
 RUN debuild -us -uc
 
 FROM debian:buster
+LABEL org.opencontainers.image.source=https://github.com/hanazuki/s3tftpd
+
 ARG SOURCE_COMMIT
 
 RUN --mount=type=bind,target=/tmp/build,source=/tmp/build,from=builder \

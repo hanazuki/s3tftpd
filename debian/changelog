@@ -1,8 +1,8 @@
-s3tftpd (0.4.1) UNRELEASED; urgency=medium
+s3tftpd (0.4.1) unstable; urgency=medium
 
   * Fix that --anticipate did not work
 
- -- Kasumi Hanazuki <kasumi@rollingapple.net>  Fri, 03 Jul 2020 17:12:28 +0000
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Fri, 26 Mar 2021 13:15:12 +0000
 
 s3tftpd (0.4.0) unstable; urgency=medium
 

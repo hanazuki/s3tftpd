@@ -62,9 +62,9 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 
 == Docker container
 
-Prebuilt container images are available at https://hub.docker.com/r/hanazuki/s3tftpd[Docker Hub]. Available tags are `latest` (the latest release), `testing` (master branch), and each versioned release.
+Prebuilt container images are available at https://github.com/users/hanazuki/packages/container/package/s3tftpd[GitHub Container Registry]. Available tags are `latest` (the latest release), `testing` (master branch), and each versioned release.
 
 Example invocation:
 ```
-docker run -p 69:69/udp -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_REGION hanazuki/s3tftpd:latest s3://bucket/prefix/
+docker run -p 69:69/udp -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_REGION ghcr.io/hanazuki/s3tftpd:latest s3://bucket/prefix/
 ```

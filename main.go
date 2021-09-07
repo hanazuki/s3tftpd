@@ -24,18 +24,20 @@ import (
 )
 
 type Args struct {
-	S3uri url.URL `arg required name:"S3URI" help:"s3:// URI that identifies the target bucket and optional key prefix"`
+	S3uri url.URL `arg:"" required:"" name:"S3URI" help:"s3:// URI that identifies the target bucket and optional key prefix"`
 
-	Region      string `name:"region" help:"AWS region where the bucket resides" placeholder:"REGION"`
-	Retries     int    `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
-	Timeout     int    `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
-	BlockSize   int    `short:"b" name:"blocksize" default:"512" help:"Maximum permitted block size in octets"`
-	Anticipate  uint   `name:"anticipate" default:"0" help:"Size of anticipation window. Set 0 to disable sender anticipation (experimental)"`
-	NoDualStack bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
-	Accelerate  bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
-	SinglePort  bool   `name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
-	Verbosity   int    `short:"v" name:"verbosity" default:"7" help:"Verbosity level for logging (0..8)"`
-	DebugApi    bool   `name:"debug-api" env:"AWS_DEBUG" help:"Enable logging AWS API calls"`
+	Region         string `name:"region" help:"AWS region where the bucket resides" placeholder:"REGION"`
+	Retries        int    `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
+	Timeout        int    `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
+	BlockSize      int    `short:"b" name:"blocksize" default:"512" help:"Maximum permitted block size in octets"`
+	Anticipate     uint   `name:"anticipate" default:"0" help:"Size of anticipation window. Set 0 to disable sender anticipation (experimental)"`
+	NoDualStack    bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
+	Accelerate     bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
+	EndpointURL    string `name:"endpoint-url" help:"Use custom endpoint URL instead of default S3 endpoint"`
+	ForcePathStyle bool   `name:"force-path-style" help:"Use path-style URLs to access objects"`
+	SinglePort     bool   `name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
+	Verbosity      int    `short:"v" name:"verbosity" default:"7" help:"Verbosity level for logging (0..8)"`
+	DebugApi       bool   `name:"debug-api" env:"AWS_DEBUG" help:"Enable logging AWS API calls"`
 }
 
 type Config struct {
@@ -50,10 +52,15 @@ func (c *Config) awsConfig() *aws.Config {
 	awsConfig := defaults.Get().Config.
 		WithUseDualStack(!c.NoDualStack).
 		WithS3UseAccelerate(c.Accelerate).
+		WithS3ForcePathStyle(c.ForcePathStyle).
 		WithLogLevel(c.awsLogLevel())
 
 	if c.Region != "" {
 		awsConfig = awsConfig.WithRegion(c.Region)
+	}
+
+	if c.EndpointURL != "" {
+		awsConfig = awsConfig.WithEndpoint(c.EndpointURL)
 	}
 
 	return awsConfig

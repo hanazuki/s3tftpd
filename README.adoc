@@ -44,6 +44,12 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 *--accelerate*::
   Tells s3tftpd to use S3 Transfer Acceleration. The bucket must be enabled for acceleration.
 
+*--endpoint-url*=_URL_::
+  Tells s3tftpd to use the given URL instead of the default S3 endpoint. Used when accessing S3 thourgh interface endpoints or connecting to S3-compatible object storage.
+
+*--force-path-style*::
+  Tells s3tftpd to use the path-style URLs when accessing objects. Useful when connecting to S3-compatible object storage.
+
 *--single-port*::
   [experimantal] Tells s3tftpd to use a single port for all the connections. By default, s3tftpd responds each request with a random source port as defined by the protocol standard. But packets from random port is often blocked by firewalls or NAT gateways between the client and the server. When this flag is set, s3tftpd responds back with the same port as it listens for the incoming requests, so that the response packet is likely allowed by the firewalls.
 
@@ -59,6 +65,10 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 == Security
 
 `s3tftpd` retrieves AWS credentials from the https://docs.aws.amazon.com/sdk-for-go/api/aws/session/#hdr-Environment_Variables[`AWS_*` environment variables], shared credentials file or EC2/ECS metadata service in this order. Because of the nature of TFTP `s3tftpd` has no mechanisms of client authentication. Access controls on the objects should be enforced using IAM Policies and S3 Bucket Policies and appropriate network-level access control should be performed.
+
+== S3-compatible object storage
+
+`s3tftpd` may work with some object storage with S3-compliant interface, such as https://min.io/[MinIO]. To use other object storage than Amazon S3, pass the custom endpoint URL to `--endpoint-url` option and, depending on the set up, specify `--force-path-style` to turn off virtual hosted-style requests.
 
 == Docker container
 

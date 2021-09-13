@@ -1,3 +1,10 @@
+s3tftpd (0.4.3) UNRELEASED; urgency=medium
+
+  * docker: Use inet-socket-listen from executile instead of
+    systemd-socket-activate.
+
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Mon, 13 Sep 2021 12:51:46 +0000
+
 s3tftpd (0.4.2) unstable; urgency=medium
 
   * Add --endpoint-url and --force-path-style options to use custom object storage

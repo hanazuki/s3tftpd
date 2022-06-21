@@ -14,6 +14,8 @@ github.com/jmespath/go-jmespath v0.3.0 h1:OS12ieG61fsCg5+qLJ+SsW9NicxNkg3b25OyT2
 github.com/jmespath/go-jmespath v0.3.0/go.mod h1:9QtRXoHjLGCJ5IBSaohpXITPlowMeeYCZ7fLUTSywik=
 github.com/pin/tftp v0.0.0-20200229063000-e4f073737eb2 h1:gdzFBthLhDNr1+CXXEskaYh3ugPjEtoLyn0m/AjNRWw=
 github.com/pin/tftp v0.0.0-20200229063000-e4f073737eb2/go.mod h1:1kbtV8n0I3ujA7FewmPymdTyq7Lgk5UhmEy7pcrVVWU=
+github.com/pin/tftp v0.0.0-20210809155059-0161c5dd2e96 h1:up6QoQMll+v1jdqjtGmN48/Il0dE3sIyilxXq7kfWJM=
+github.com/pin/tftp v0.0.0-20210809155059-0161c5dd2e96/go.mod h1:1kbtV8n0I3ujA7FewmPymdTyq7Lgk5UhmEy7pcrVVWU=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

@@ -5,7 +5,7 @@ Kasumi Hanazuki
 
 == Name
 
-s3tftpd - S3-backed TFTP server
+s3tftpd - TFTP server with Amazon S3 as backing storage
 
 == Synopsis
 
@@ -15,7 +15,7 @@ s3tftpd - S3-backed TFTP server
 
 `s3tftpd` serves files on Amazon S3 via TFTP protocol, supporting both RRQ and WRQ.
 
-`s3tftpd` expects to receive a file descriptor for a UDP socket from the system manager (e.g. systemd). If you are not using a compatible system manager, you can use https://www.freedesktop.org/software/systemd/man/systemd-socket-activate.html[`systemd-socket-activate(1)`] to pass an FD to `s3tftpd`.
+`s3tftpd` expects to receive a file descriptor for a UDP socket from the system manager (e.g. systemd). If you are not using a compatible system manager, you can use https://www.freedesktop.org/software/systemd/man/systemd-socket-activate.html[`systemd-socket-activate(1)`] to pass a file descriptor to `s3tftpd`.
 
 ```
 systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
@@ -64,17 +64,18 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 
 == Security
 
-`s3tftpd` retrieves AWS credentials from the https://docs.aws.amazon.com/sdk-for-go/api/aws/session/#hdr-Environment_Variables[`AWS_*` environment variables], shared credentials file or EC2/ECS metadata service in this order. Because of the nature of TFTP `s3tftpd` has no mechanisms of client authentication. Access controls on the objects should be enforced using IAM Policies and S3 Bucket Policies and appropriate network-level access control should be performed.
+`s3tftpd` tries to retrieve AWS credentials from the https://docs.aws.amazon.com/sdk-for-go/api/aws/session/#hdr-Environment_Variables[`AWS_*` environment variables], shared credentials file or EC2/ECS metadata service in this order. Because of the nature of TFTP `s3tftpd` has no mechanisms of client authentication. Access controls on the objects should be enforced using IAM Policies and/or S3 Bucket Policies, and appropriate network-level access control should be performed.
 
 == S3-compatible object storage
 
 `s3tftpd` may work with some object storage with S3-compliant interface, such as https://min.io/[MinIO]. To use other object storage than Amazon S3, pass the custom endpoint URL to `--endpoint-url` option and, depending on the set up, specify `--force-path-style` to turn off virtual hosted-style requests.
 
-== Docker container
+== Container images
 
-Prebuilt container images are available at https://github.com/users/hanazuki/packages/container/package/s3tftpd[GitHub Container Registry]. Available tags are `latest` (the latest release), `testing` (master branch), and each versioned release.
+Prebuilt Linux container images are available at https://github.com/users/hanazuki/packages/container/package/s3tftpd[GitHub Container Registry] for amd64 and arm64 architectures. Available tags are `latest` (the latest release), `testing` (master branch), and each versioned release.
 
 Example invocation:
 ```
+export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION
 docker run -p 69:69/udp -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_REGION ghcr.io/hanazuki/s3tftpd:latest s3://bucket/prefix/
 ```

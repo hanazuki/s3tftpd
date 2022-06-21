@@ -85,3 +85,5 @@ jobs:
         labels: |
           org.opencontainers.image.source=${{ github.event.repository.html_url }}
           org.opencontainers.image.revision=${{ github.sha }}
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:testing
+        cache-to: type=inline

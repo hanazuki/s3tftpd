@@ -1,11 +1,11 @@
-s3tftpd (0.4.3) UNRELEASED; urgency=medium
+s3tftpd (0.4.3) unstable; urgency=medium
 
   * container: Use inet-socket-listen from executile instead of
     systemd-socket-activate.
   * Update underlying TFTP library so that s3tftpd will respond with
     the same IP address as it has reveived the request (not tested).
 
- -- Kasumi Hanazuki <kasumi@rollingapple.net>  Mon, 13 Sep 2021 12:51:46 +0000
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Tue, 21 Jun 2022 09:15:08 +0000
 
 s3tftpd (0.4.2) unstable; urgency=medium
 

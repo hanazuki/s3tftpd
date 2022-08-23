@@ -1,3 +1,9 @@
+s3tftpd (0.4.4) UNRELEASED; urgency=medium
+
+  * Update dependency
+
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Tue, 23 Aug 2022 10:04:10 +0000
+
 s3tftpd (0.4.3) unstable; urgency=medium
 
   * container: Use inet-socket-listen from executile instead of

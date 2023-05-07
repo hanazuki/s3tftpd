@@ -1,6 +1,7 @@
 s3tftpd (0.4.4) UNRELEASED; urgency=medium
 
   * Update dependency
+  * Require golang v1.19
 
  -- Kasumi Hanazuki <kasumi@rollingapple.net>  Tue, 23 Aug 2022 10:04:10 +0000
 

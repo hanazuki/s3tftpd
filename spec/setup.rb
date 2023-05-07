@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'aws-sdk-s3'
 
-s3 = Aws::S3::Resource.new
+s3 = Aws::S3::Resource.new(region: ENV.fetch('AWS_REGION'))
 bucket_name = ENV.fetch('TEST_BUCKET_NAME')
 bucket = s3.bucket(bucket_name)
 

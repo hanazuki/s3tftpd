@@ -1,6 +1,6 @@
 s3tftpd (0.4.4) UNRELEASED; urgency=medium
 
-  * Update dependency
+  * Update dependency, migrate to aws-sdk-go-v2
   * Require golang v1.19
 
  -- Kasumi Hanazuki <kasumi@rollingapple.net>  Tue, 23 Aug 2022 10:04:10 +0000

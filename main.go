@@ -74,7 +74,7 @@ func (c *Config) awsLogLevel() aws.LogLevelType {
 }
 
 func (c *Config) s3client() *s3.S3 {
-	return s3.New(c.session, c.awsConfig())
+	return s3.New(c.session)
 }
 
 func (c *Config) logf(severity int, format string, args ...interface{}) (n int, error error) {
@@ -207,7 +207,7 @@ func main() {
 		}
 	}
 
-	session, err := session.NewSession()
+	session, err := session.NewSession(config.awsConfig())
 	if err != nil {
 		config.log(2, err)
 		os.Exit(1)

@@ -9,8 +9,11 @@ func normalizeKey(s string) string {
 	if len(s) == 0 {
 		return s
 	}
-	if s[0] != '/' {
-		s = "/" + s
+	if s[0] == '/' {
+		s = s[1:]
+	}
+	if len(s) == 0 {
+		return s
 	}
 	if s[len(s)-1] == '/' {
 		s = s[0 : len(s)-1]
@@ -19,7 +22,10 @@ func normalizeKey(s string) string {
 }
 
 func prefixKey(prefix, key string) string {
-	return normalizeKey(prefix) + normalizeKey(key)
+	if prefix == "" || prefix == "/" {
+		return normalizeKey(key)
+	}
+	return normalizeKey(prefix) + "/" + normalizeKey(key)
 }
 
 func parseS3uri(uri url.URL) (bucket, prefix string, err error) {

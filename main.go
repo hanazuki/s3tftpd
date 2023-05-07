@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -13,11 +14,10 @@ import (
 	"time"
 
 	"github.com/alecthomas/kong"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/defaults"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/coreos/go-systemd/v22/activation"
 	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/pin/tftp/v3"
@@ -43,38 +43,41 @@ type Args struct {
 type Config struct {
 	Args
 
-	bucket  string
-	prefix  string
-	session *session.Session
+	bucket string
+	prefix string
+	s3     *s3.Client
+
+	ctx context.Context
 }
 
-func (c *Config) awsConfig() *aws.Config {
-	awsConfig := defaults.Get().Config.
-		WithUseDualStack(!c.NoDualStack).
-		WithS3UseAccelerate(c.Accelerate).
-		WithS3ForcePathStyle(c.ForcePathStyle).
-		WithLogLevel(c.awsLogLevel())
+func (c *Config) awsOptions() (options []func(*awsConfig.LoadOptions) error) {
+	if c.DebugApi {
+		options = append(options, awsConfig.WithClientLogMode(
+			aws.LogRequest|aws.LogRetries|aws.LogResponse,
+		))
+	}
 
 	if c.Region != "" {
-		awsConfig = awsConfig.WithRegion(c.Region)
+		options = append(options, awsConfig.WithRegion(c.Region))
 	}
 
 	if c.EndpointURL != "" {
-		awsConfig = awsConfig.WithEndpoint(c.EndpointURL)
+		resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+			if service == s3.ServiceID {
+				return aws.Endpoint{
+					PartitionID:       "aws",
+					URL:               c.EndpointURL,
+					SigningRegion:     c.Region,
+					HostnameImmutable: true,
+				}, nil
+			}
+			return aws.Endpoint{}, fmt.Errorf("unknown endpoint requested")
+		})
+
+		options = append(options, awsConfig.WithEndpointResolverWithOptions(resolver))
 	}
 
-	return awsConfig
-}
-
-func (c *Config) awsLogLevel() aws.LogLevelType {
-	if c.DebugApi {
-		return aws.LogDebug
-	}
-	return aws.LogOff
-}
-
-func (c *Config) s3client() *s3.S3 {
-	return s3.New(c.session, c.awsConfig())
+	return
 }
 
 func (c *Config) logf(severity int, format string, args ...interface{}) (n int, error error) {
@@ -94,7 +97,7 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 
 	key := prefixKey(c.prefix, path)
 	c.logf(7, "GetObject %s %s", c.bucket, key)
-	ret, err := c.s3client().GetObject(&s3.GetObjectInput{
+	ret, err := c.s3.GetObject(c.ctx, &s3.GetObjectInput{
 		Bucket: aws.String(c.bucket),
 		Key:    aws.String(key),
 	})
@@ -103,11 +106,10 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 	}
 	defer ret.Body.Close()
 
-	if ret.ContentLength != nil {
-		tsize := *ret.ContentLength
-		c.logf(7, "%s tsize %d", remoteAddr.String(), tsize)
-		xfer.SetSize(tsize)
-	}
+	tsize := ret.ContentLength
+	c.logf(7, "%s tsize %d", remoteAddr.String(), tsize)
+	xfer.SetSize(tsize)
+
 	rf.ReadFrom(ret.Body)
 
 	return nil
@@ -126,7 +128,7 @@ func (c *Config) handleWrite(path string, wt io.WriterTo) error {
 
 	key := prefixKey(c.prefix, path)
 	c.logf(7, "PutObject %s %s", c.bucket, key)
-	_, err := s3manager.NewUploaderWithClient(c.s3client()).Upload(&s3manager.UploadInput{
+	_, err := s3manager.NewUploader(c.s3).Upload(c.ctx, &s3.PutObjectInput{
 		Bucket: aws.String(c.bucket),
 		Key:    aws.String(key),
 		Body:   buffer(wt),
@@ -171,7 +173,9 @@ func getConn() (net.PacketConn, error) {
 	return conns[0], nil
 }
 
-func parseArgs() (config Config, err error) {
+func parseArgs(ctx context.Context) (config Config, err error) {
+	config.ctx = ctx
+
 	parser, err := kong.New(&config.Args)
 	if err != nil {
 		panic(err)
@@ -193,7 +197,7 @@ func parseArgs() (config Config, err error) {
 }
 
 func main() {
-	config, err := parseArgs()
+	config, err := parseArgs(context.Background())
 	if err != nil {
 		config.Verbosity = 7
 		config.log(2, err)
@@ -207,12 +211,17 @@ func main() {
 		}
 	}
 
-	session, err := session.NewSession()
+	awsConfig, err := awsConfig.LoadDefaultConfig(config.ctx, config.awsOptions()...)
 	if err != nil {
 		config.log(2, err)
 		os.Exit(1)
 	}
-	config.session = session
+
+	config.s3 = s3.NewFromConfig(awsConfig, func(o *s3.Options) {
+		o.UsePathStyle = config.ForcePathStyle
+		o.UseAccelerate = config.Accelerate
+		o.UseDualstack = !config.NoDualStack
+	})
 
 	conn, err := getConn()
 	if err != nil {

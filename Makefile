@@ -12,6 +12,9 @@ all: build man
 build:
 	${GOCMD} build
 
+test:
+	${GOCMD} test
+
 man:
 	asciidoctor -b manpage man/*.adoc
 

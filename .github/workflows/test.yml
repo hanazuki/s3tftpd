@@ -38,7 +38,10 @@ jobs:
       with:
         role-to-assume: arn:aws:iam::665474295387:role/gha-s3tftpd
         aws-region: us-east-2
-    - name: Test
+    - name: Unit test
+      run: |
+        make test
+    - name: Integration test
       run: |
         bundle exec rspec
       env:

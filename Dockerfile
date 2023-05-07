@@ -1,6 +1,18 @@
-# syntax = docker/dockerfile:experimental
+# syntax = docker/dockerfile:1
+
 
 FROM debian:bullseye as build-base
+
+COPY <<EOF /etc/apt/preferences.d/backports.pref
+Package: *
+Pin: release a=bullseye-backports
+Pin-Priority: 500
+EOF
+
+COPY <<EOF /etc/apt/sources.list.d/backports.list
+deb http://deb.debian.org/debian bullseye-backports main
+EOF
+
 RUN apt-get update -qq && apt-get install -y --no-install-recommends devscripts wget
 RUN gpg --no-default-keyring --keyring trustedkeys.gpg --fetch-keys https://github.com/hanazuki.gpg
 

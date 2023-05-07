@@ -1,9 +1,11 @@
-export GO111MODULE=on
-
 GOCMD = go
 RM = rm
 INSTALL = install
 DESTDIR =
+
+ifeq (,$(wildcard ./vendor/modules.txt))
+  export GOFLAGS=-mod=mod
+endif
 
 all: build man
 

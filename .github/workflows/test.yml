@@ -34,7 +34,7 @@ jobs:
       run: |
         make
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v2
       with:
         role-to-assume: arn:aws:iam::665474295387:role/gha-s3tftpd
         aws-region: us-east-2

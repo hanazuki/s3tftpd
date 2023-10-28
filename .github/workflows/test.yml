@@ -18,18 +18,13 @@ jobs:
       contents: read
     steps:
     - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
-      with:
-        bundler-cache: true
     - name: Prepare
       run: |
         sudo apt-get update -qq
         sudo apt-get install -y tftp-hpa asciidoctor
-    - name: Install
-      run: |
-        bundle config set deployment true
-        bundle config set path vendor/bundle
-        bundle install --jobs 4 --retry 3
+    - uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
     - name: Build
       run: |
         make

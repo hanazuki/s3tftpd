@@ -1,25 +1,15 @@
 # syntax = docker/dockerfile:1
 
 
-FROM debian:bullseye as build-base
-
-COPY <<EOF /etc/apt/preferences.d/backports.pref
-Package: *
-Pin: release a=bullseye-backports
-Pin-Priority: 500
-EOF
-
-COPY <<EOF /etc/apt/sources.list.d/backports.list
-deb http://deb.debian.org/debian bullseye-backports main
-EOF
+FROM debian:bookworm as build-base
 
 RUN apt-get update -qq && apt-get install -y --no-install-recommends devscripts wget
 RUN gpg --no-default-keyring --keyring trustedkeys.gpg --fetch-keys https://github.com/hanazuki.gpg
 
 FROM build-base as build-executile
 WORKDIR /tmp/build
-RUN dget https://github.com/hanazuki/executile/releases/download/v0.1.0/executile_0.1.0_source.changes
-WORKDIR /tmp/build/executile-0.1.0
+RUN dget https://github.com/hanazuki/executile/releases/download/v0.1.1/executile_0.1.1_source.changes
+WORKDIR /tmp/build/executile-0.1.1
 RUN apt-get build-dep -y .
 RUN debuild -b -uc
 
@@ -31,7 +21,7 @@ COPY . .
 RUN --mount=type=cache,target=/root/go/pkg/mod go mod vendor
 RUN debuild -us -uc
 
-FROM debian:bullseye
+FROM debian:bookworm
 RUN --mount=type=bind,target=/tmp/build-executile,source=/tmp/build,from=build-executile \
     --mount=type=bind,target=/tmp/build-s3tftpd,source=/tmp/build,from=build-s3tftpd \
     apt-get update -qq && \

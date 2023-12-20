@@ -64,7 +64,7 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 
 == Security
 
-`s3tftpd` tries to retrieve AWS credentials from the https://docs.aws.amazon.com/sdk-for-go/api/aws/session/#hdr-Environment_Variables[`AWS_*` environment variables], shared credentials file or EC2/ECS metadata service in this order. Because of the nature of TFTP `s3tftpd` has no mechanisms of client authentication. Access controls on the objects should be enforced using IAM Policies and/or S3 Bucket Policies, and appropriate network-level access control should be performed.
+`s3tftpd` tries to retrieve AWS credentials from the `AWS_*` environment variables (static access key or web identity token), shared credentials file or ECS/EC2 metadata service in this order (Refer to https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/#specifying-credentials[AWS SDK for Go V2 document] for more details). Because of the nature of TFTP, `s3tftpd` has no mechanisms of client authentication. Access controls on the objects should be enforced using IAM Policies and/or S3 Bucket Policies, and appropriate network-level access control should be implemented.
 
 == S3-compatible object storage
 

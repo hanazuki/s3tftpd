@@ -8,8 +8,8 @@ RUN gpg --no-default-keyring --keyring trustedkeys.gpg --fetch-keys https://gith
 
 FROM build-base as build-executile
 WORKDIR /tmp/build
-RUN dget https://github.com/hanazuki/executile/releases/download/v0.1.0/executile_0.1.0_source.changes
-WORKDIR /tmp/build/executile-0.1.0
+RUN dget https://github.com/hanazuki/executile/releases/download/v0.1.1/executile_0.1.1_source.changes
+WORKDIR /tmp/build/executile-0.1.1
 RUN apt-get build-dep -y .
 RUN debuild -b -uc
 

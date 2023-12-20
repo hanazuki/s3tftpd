@@ -107,8 +107,10 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 	defer ret.Body.Close()
 
 	tsize := ret.ContentLength
-	c.logf(7, "%s tsize %d", remoteAddr.String(), tsize)
-	xfer.SetSize(tsize)
+	if tsize != nil {
+		c.logf(7, "%s tsize %d", remoteAddr.String(), tsize)
+		xfer.SetSize(*tsize)
+	}
 
 	rf.ReadFrom(ret.Body)
 

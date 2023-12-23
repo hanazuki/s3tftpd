@@ -1,4 +1,4 @@
-s3tftpd (0.4.4) UNRELEASED; urgency=medium
+s3tftpd (0.5.0) UNRELEASED; urgency=medium
 
   * Update dependency, migrate to aws-sdk-go-v2
   * Require golang v1.19

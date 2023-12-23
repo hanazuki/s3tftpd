@@ -1,3 +1,9 @@
+s3tftpd (0.5.1) UNRELEASED; urgency=medium
+
+  * No changes except for release workflow
+
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Sat, 23 Dec 2023 11:12:01 +0000
+
 s3tftpd (0.5.0) unstable; urgency=medium
 
   * Update dependency, migrate to aws-sdk-go-v2

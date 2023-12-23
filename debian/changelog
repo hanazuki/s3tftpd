@@ -1,10 +1,10 @@
-s3tftpd (0.5.0) UNRELEASED; urgency=medium
+s3tftpd (0.5.0) unstable; urgency=medium
 
   * Update dependency, migrate to aws-sdk-go-v2
   * Require golang v1.19
   * container: Base image is now bookworm
 
- -- Kasumi Hanazuki <kasumi@rollingapple.net>  Tue, 23 Aug 2022 10:04:10 +0000
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Sat, 23 Dec 2023 09:24:41 +0000
 
 s3tftpd (0.4.3) unstable; urgency=medium
 

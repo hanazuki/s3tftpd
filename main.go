@@ -222,7 +222,11 @@ func main() {
 	config.s3 = s3.NewFromConfig(awsConfig, func(o *s3.Options) {
 		o.UsePathStyle = config.ForcePathStyle
 		o.UseAccelerate = config.Accelerate
-		o.UseDualstack = !config.NoDualStack
+		if config.NoDualStack {
+			o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateDisabled
+		} else {
+			o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateEnabled
+		}
 	})
 
 	conn, err := getConn()

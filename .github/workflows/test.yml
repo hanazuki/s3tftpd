@@ -107,7 +107,7 @@ jobs:
         merge-multiple: true
     - shell: bash
       run: |
-        tags=()
+        tags=(--dry-run)
         if [[ $GITHUB_EVENT_NAME == push ]]; then
           if [[ $GITHUB_REF == refs/heads/master ]]; then
             tags=(-t "${REPO}:${SHA}" -t "${REPO}:testing")
@@ -115,10 +115,14 @@ jobs:
             tags=(-t "${REPO}:${GITHUB_REF#refs/tags/v}" -t "${REPO}:latest")
           fi
         fi
+        annotations=(
+          --annotation "index:org.opencontainers.image.revision=${SHA}"
+          --annotation "index:org.opencontainers.image.source=${SRC}"
+        )
 
-        cat "${RUNNER_TEMP}"/digests/* | xargs -I{} printf "%s@%s\n" "${REPO}" {} | xargs docker buildx imagetools create "${tags[@]}"
-        docker buildx imagetools inspect "${REPO}:${SHA}"
+        cat "${RUNNER_TEMP}"/digests/* | xargs -I{} printf "%s@%s\n" "${REPO}" {} | xargs docker buildx imagetools create "${tags[@]}" "${annotations[@]}"
       env:
         RUNNER_TEMP: ${{ runner.temp }}
         REPO: ghcr.io/${{ github.repository }}
         SHA: ${{ github.sha }}
+        SRC: ${{ github.event.repository.html_url }}

@@ -72,7 +72,7 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 
 == Container images
 
-Prebuilt Linux container images are available at https://github.com/users/hanazuki/packages/container/package/s3tftpd[GitHub Container Registry] for amd64 and arm64 architectures. Available tags are `latest` (the latest release), `testing` (master branch), and each versioned release.
+Prebuilt Linux container images are available at https://github.com/users/hanazuki/packages/container/package/s3tftpd[GitHub Container Registry] for amd64, arm64 and armv7 architectures. Available tags are `latest` (the latest release), `testing` (master branch), and each versioned release.
 
 Example invocation:
 ```

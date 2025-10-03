@@ -1,9 +1,9 @@
-s3tftpd (0.6.0) UNRELEASED; urgency=medium
+s3tftpd (0.6.0) unstable; urgency=medium
 
   * Require golang v1.24
   * container: Base image is now trixie
 
- -- Kasumi Hanazuki <kasumi@rollingapple.net>  Fri, 03 Oct 2025 22:05:37 +0000
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Fri, 03 Oct 2025 22:15:38 +0000
 
 s3tftpd (0.5.1) unstable; urgency=medium
 

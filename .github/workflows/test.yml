@@ -43,8 +43,6 @@ jobs:
         TEST_BUCKET_NAME: hanazuki-s3tftpd-test
 
   docker-build:
-    needs:
-      - test
     strategy:
       matrix:
         include:
@@ -90,7 +88,9 @@ jobs:
         retention-days: 1
 
   docker-merge:
-    needs: docker-build
+    needs:
+    - test
+    - docker-build
     runs-on: ubuntu-latest
     permissions:
       packages: write

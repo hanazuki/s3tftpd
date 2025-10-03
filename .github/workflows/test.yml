@@ -107,10 +107,10 @@ jobs:
         merge-multiple: true
     - shell: bash
       run: |
-        tags=(-t "${REPO}:${SHA}")
+        tags=()
         if [[ $GITHUB_EVENT_NAME == push ]]; then
           if [[ $GITHUB_REF == refs/heads/master ]]; then
-            tags=(-t "${REPO}:testing")
+            tags=(-t "${REPO}:${SHA}" -t "${REPO}:testing")
           elif [[ $GITHUB_REF == refs/tags/v* ]]; then
             tags=(-t "${REPO}:${GITHUB_REF#refs/tags/v}" -t "${REPO}:latest")
           fi

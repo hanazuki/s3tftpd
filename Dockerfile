@@ -1,19 +1,19 @@
 # syntax = docker/dockerfile:1
 
 
-FROM debian:trixie as build-base
+FROM debian:trixie AS build-base
 
 RUN apt-get update -qq && apt-get install -y --no-install-recommends devscripts wget dirmngr
 RUN gpg --no-default-keyring --keyring trustedkeys.gpg --fetch-keys https://github.com/hanazuki.gpg
 
-FROM build-base as build-executile
+FROM build-base AS build-executile
 WORKDIR /tmp/build
 RUN dget https://github.com/hanazuki/executile/releases/download/v0.1.2/executile_0.1.2_source.changes
 WORKDIR /tmp/build/executile-0.1.2
 RUN apt-get build-dep -y .
 RUN debuild -b -uc
 
-FROM build-base as build-s3tftpd
+FROM build-base AS build-s3tftpd
 WORKDIR /tmp/build/s3tftpd
 COPY debian/control debian/
 RUN apt-get build-dep -y .

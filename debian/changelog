@@ -1,8 +1,8 @@
-s3tftpd (0.6.1) UNRELEASED; urgency=medium
+s3tftpd (0.6.1) unstable; urgency=medium
 
   * Update dependency
 
- -- Kasumi Hanazuki <kasumi@rollingapple.net>  Mon, 16 Feb 2026 13:58:14 +0000
+ -- Kasumi Hanazuki <kasumi@rollingapple.net>  Mon, 16 Feb 2026 15:43:56 +0000
 
 s3tftpd (0.6.0) unstable; urgency=medium
 

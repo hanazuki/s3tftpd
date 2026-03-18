@@ -1,5 +1,6 @@
 s3tftpd (0.6.2) UNRELEASED; urgency=medium
 
+  * Add short options: -a for --anticipate, -M for --ignore-mtu, -s for --single-port
   * Introduce --ignore-mtu flag to allow negotiated block size larger than interface MTU
   * Fix --blocksize default to impose no server-side limit (0) instead of misleading 512
   * Update dependency

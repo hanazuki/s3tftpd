@@ -30,13 +30,13 @@ type Args struct {
 	Retries        int    `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
 	Timeout        int    `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
 	BlockSize      int    `short:"b" name:"blocksize" default:"0" help:"Maximum permitted block size in octets (513..65464); 0 means no server-side limit. May be further clamped by MTU (see --ignore-mtu)"`
-	IgnoreMTU      bool   `name:"ignore-mtu" help:"Honor client-requested block size without clamping to the interface MTU"`
-	Anticipate     uint   `name:"anticipate" default:"0" help:"Size of anticipation window. Set 0 to disable sender anticipation (experimental)"`
+	IgnoreMTU      bool   `short:"M" name:"ignore-mtu" help:"Honor client-requested block size without clamping to the interface MTU"`
+	Anticipate     uint   `short:"a" name:"anticipate" default:"0" help:"Size of anticipation window. Set 0 to disable sender anticipation (experimental)"`
 	NoDualStack    bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
 	Accelerate     bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
 	EndpointURL    string `name:"endpoint-url" help:"Use custom endpoint URL instead of default S3 endpoint" placeholder:"URL"`
 	ForcePathStyle bool   `name:"force-path-style" help:"Use path-style URLs to access objects"`
-	SinglePort     bool   `name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
+	SinglePort     bool   `short:"s" name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
 	Verbosity      int    `short:"v" name:"verbosity" default:"7" help:"Verbosity level for logging (0..8)"`
 	DebugApi       bool   `name:"debug-api" env:"AWS_DEBUG" help:"Enable logging AWS API calls"`
 }

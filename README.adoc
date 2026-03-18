@@ -56,6 +56,9 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 *--force-path-style*::
   Tells s3tftpd to use the path-style URLs when accessing objects. Useful when connecting to S3-compatible object storage.
 
+*--no-sign-request*::
+  Makes requests without signing. Suitable for accessing publicly accessible buckets without AWS credentials.
+
 *--requester-pays*::
   Indicates that the requester will pay for requests and data transfer costs. Use this when accessing S3 buckets that have Requester Pays enabled.
 

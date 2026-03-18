@@ -39,6 +39,7 @@ type Args struct {
 	Accelerate     bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
 	EndpointURL    string `name:"endpoint-url" help:"Use custom endpoint URL instead of default S3 endpoint" placeholder:"URL"`
 	ForcePathStyle bool   `name:"force-path-style" help:"Use path-style URLs to access objects"`
+	NoSignRequest  bool   `name:"no-sign-request" help:"Make requests without signing. Suitable for accessing publicly accessible buckets"`
 	RequesterPays  bool   `name:"requester-pays" help:"Indicate that the requester will pay for requests and data transfer"`
 	Verbosity      int    `short:"v" name:"verbosity" default:"7" help:"Verbosity level for logging (0..8)"`
 	DebugApi       bool   `name:"debug-api" env:"AWS_DEBUG" help:"Enable logging AWS API calls"`
@@ -63,6 +64,10 @@ func (c *Config) awsOptions() (options []func(*awsConfig.LoadOptions) error) {
 
 	if c.Region != "" {
 		options = append(options, awsConfig.WithRegion(c.Region))
+	}
+
+	if c.NoSignRequest {
+		options = append(options, awsConfig.WithCredentialsProvider(aws.AnonymousCredentials{}))
 	}
 
 	if c.EndpointURL != "" {

@@ -29,7 +29,8 @@ type Args struct {
 	Region         string `name:"region" help:"AWS region where the bucket resides" placeholder:"REGION"`
 	Retries        int    `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
 	Timeout        int    `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
-	BlockSize      int    `short:"b" name:"blocksize" default:"512" help:"Maximum permitted block size in octets"`
+	BlockSize      int    `short:"b" name:"blocksize" default:"512" help:"Maximum permitted block size in octets (512..65464)"`
+	RespectMTU     bool   `name:"respect-mtu" help:"Clamp negotiated block size to the interface MTU minus protocol overhead"`
 	Anticipate     uint   `name:"anticipate" default:"0" help:"Size of anticipation window. Set 0 to disable sender anticipation (experimental)"`
 	NoDualStack    bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
 	Accelerate     bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
@@ -240,6 +241,7 @@ func main() {
 	server.SetTimeout(time.Duration(config.Timeout) * time.Millisecond)
 	server.SetRetries(config.Retries)
 	server.SetBlockSize(config.BlockSize)
+	server.SetBlockSizeNegotiation(config.RespectMTU)
 	server.SetAnticipate(config.Anticipate)
 	server.SetHook(config.hooks())
 	if config.SinglePort {

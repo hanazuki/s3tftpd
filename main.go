@@ -147,18 +147,18 @@ func (c *Config) handleWrite(path string, wt io.WriterTo) error {
 
 	key := prefixKey(c.prefix, path)
 	c.logf(7, "PutObject %s %s", c.bucket, key)
-	upload := &s3.PutObjectInput{
+	input := &s3.PutObjectInput{
 		Bucket: aws.String(c.bucket),
 		Key:    aws.String(key),
 		Body:   buffer(wt),
 	}
 	if c.ExpectedBucketOwner != "" {
-		upload.ExpectedBucketOwner = aws.String(c.ExpectedBucketOwner)
+		input.ExpectedBucketOwner = aws.String(c.ExpectedBucketOwner)
 	}
 	if c.RequesterPays {
-		upload.RequestPayer = types.RequestPayerRequester
+		input.RequestPayer = types.RequestPayerRequester
 	}
-	_, err := s3manager.NewUploader(c.s3).Upload(c.ctx, upload)
+	_, err := s3manager.NewUploader(c.s3).Upload(c.ctx, input)
 	if err != nil {
 		return err
 	}

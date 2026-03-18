@@ -29,8 +29,8 @@ type Args struct {
 	Region         string `name:"region" help:"AWS region where the bucket resides" placeholder:"REGION"`
 	Retries        int    `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
 	Timeout        int    `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
-	BlockSize      int    `short:"b" name:"blocksize" default:"512" help:"Maximum permitted block size in octets (512..65464)"`
-	RespectMTU     bool   `name:"respect-mtu" help:"Clamp negotiated block size to the interface MTU minus protocol overhead"`
+	BlockSize      int    `short:"b" name:"blocksize" default:"0" help:"Maximum permitted block size in octets (513..65464); 0 means no server-side limit. May be further clamped by MTU (see --ignore-mtu)"`
+	IgnoreMTU      bool   `name:"ignore-mtu" help:"Honor client-requested block size without clamping to the interface MTU"`
 	Anticipate     uint   `name:"anticipate" default:"0" help:"Size of anticipation window. Set 0 to disable sender anticipation (experimental)"`
 	NoDualStack    bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
 	Accelerate     bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
@@ -208,8 +208,8 @@ func main() {
 	}
 
 	if sz := config.BlockSize; sz != 0 {
-		if sz < 512 || sz > 65464 {
-			config.log(2, "Block size is out of range (512..65464).")
+		if sz < 513 || sz > 65464 {
+			config.log(2, "Block size is out of range (513..65464).")
 			os.Exit(1)
 		}
 	}
@@ -241,7 +241,7 @@ func main() {
 	server.SetTimeout(time.Duration(config.Timeout) * time.Millisecond)
 	server.SetRetries(config.Retries)
 	server.SetBlockSize(config.BlockSize)
-	server.SetBlockSizeNegotiation(config.RespectMTU)
+	server.SetBlockSizeNegotiation(!config.IgnoreMTU)
 	server.SetAnticipate(config.Anticipate)
 	server.SetHook(config.hooks())
 	if config.SinglePort {

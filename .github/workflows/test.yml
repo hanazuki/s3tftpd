@@ -79,7 +79,7 @@ jobs:
         RUNNER_TEMP: ${{ runner.temp }}
         DIGEST: ${{ steps.build-push.outputs.digest }}
         RUNNER: ${{ matrix.runner }}
-    - name: Upload digests'
+    - name: Upload digests
       uses: actions/upload-artifact@v4
       with:
         name: digests-${{ matrix.runner }}

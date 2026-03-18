@@ -24,7 +24,7 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 == Options
 
 *--region*::
-  Specifies the AWS region where the S3 bucket resides. Instead of this flag, the environment variable `AWS_REGION` can be used to specify the region.
+  Specifies the AWS region where the S3 bucket resides. The environment variable `AWS_REGION` can also be used to specify AWS region.
 
 *-r*, *--retries*=_COUNT_::
   Number of retransmissions before the server disconnect the session. Default: 5
@@ -41,6 +41,9 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 *-a*, *--anticipate*=_WINDOW-SIZE_::
   [experimental] Enables sender anticipation feature, in which the server sends at most _WINDOW-SIZE_ data blocks before waiting ACK packets from the client. It can improve download speed. Set 0 to disable the feature. Default: 0 (disabled).
 
+*-s*, *--single-port*::
+  [experimantal] Tells s3tftpd to use a single port for all the connections. By default, s3tftpd responds each request with a random source port as defined by the protocol standard. But packets from random port is often blocked by firewalls or NAT gateways between the client and the server. When this flag is set, s3tftpd responds back with the same port as it listens for the incoming requests, so that the response packet is likely allowed by the firewalls.
+
 *--no-dualstack*::
   Disables S3 dualstack endpoint. s3tftpd, by default, uses the S3 dualstack endpoint so that it can communicate with S3 in either IPv4 or IPv6. Setting this flag forces s3tftpd to use IPv4 for the communication.
 
@@ -53,8 +56,8 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 *--force-path-style*::
   Tells s3tftpd to use the path-style URLs when accessing objects. Useful when connecting to S3-compatible object storage.
 
-*-s*, *--single-port*::
-  [experimantal] Tells s3tftpd to use a single port for all the connections. By default, s3tftpd responds each request with a random source port as defined by the protocol standard. But packets from random port is often blocked by firewalls or NAT gateways between the client and the server. When this flag is set, s3tftpd responds back with the same port as it listens for the incoming requests, so that the response packet is likely allowed by the firewalls.
+*--requester-pays*::
+  Indicates that the requester will pay for requests and data transfer costs. Use this when accessing S3 buckets that have Requester Pays enabled.
 
 *-v*, *--verbosity*=_0-8_::
   Sets the verbosity level. 0 logs nothing, 8 logs everything. Default: 7 (suppresses debug logging)

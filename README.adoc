@@ -50,6 +50,9 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 *--accelerate*::
   Tells s3tftpd to use S3 Transfer Acceleration. The bucket must be enabled for acceleration.
 
+*--expected-bucket-owner*=_ACCOUNT-ID_::
+  Rejects requests if the bucket is not owned by the specified AWS account ID. Helps prevent accidentally accessing a bucket in a different account when bucket names are similar.
+
 *--endpoint-url*=_URL_::
   Tells s3tftpd to use the given URL instead of the default S3 endpoint. Used when accessing S3 thourgh interface endpoints or connecting to S3-compatible object storage.
 

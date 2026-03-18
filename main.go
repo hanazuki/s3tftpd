@@ -37,7 +37,8 @@ type Args struct {
 	SinglePort     bool   `short:"s" name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
 	NoDualStack    bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
 	Accelerate     bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
-	EndpointURL    string `name:"endpoint-url" help:"Use custom endpoint URL instead of default S3 endpoint" placeholder:"URL"`
+	ExpectedBucketOwner string `name:"expected-bucket-owner" help:"Reject requests if the bucket is not owned by the specified AWS account ID" placeholder:"ACCOUNT-ID"`
+	EndpointURL         string `name:"endpoint-url" help:"Use custom endpoint URL instead of default S3 endpoint" placeholder:"URL"`
 	ForcePathStyle bool   `name:"force-path-style" help:"Use path-style URLs to access objects"`
 	NoSignRequest  bool   `name:"no-sign-request" help:"Make requests without signing. Suitable for accessing publicly accessible buckets"`
 	RequesterPays  bool   `name:"requester-pays" help:"Indicate that the requester will pay for requests and data transfer"`
@@ -110,6 +111,9 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 		Bucket: aws.String(c.bucket),
 		Key:    aws.String(key),
 	}
+	if c.ExpectedBucketOwner != "" {
+		input.ExpectedBucketOwner = aws.String(c.ExpectedBucketOwner)
+	}
 	if c.RequesterPays {
 		input.RequestPayer = types.RequestPayerRequester
 	}
@@ -147,6 +151,9 @@ func (c *Config) handleWrite(path string, wt io.WriterTo) error {
 		Bucket: aws.String(c.bucket),
 		Key:    aws.String(key),
 		Body:   buffer(wt),
+	}
+	if c.ExpectedBucketOwner != "" {
+		upload.ExpectedBucketOwner = aws.String(c.ExpectedBucketOwner)
 	}
 	if c.RequesterPays {
 		upload.RequestPayer = types.RequestPayerRequester

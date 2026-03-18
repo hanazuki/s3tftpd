@@ -35,10 +35,10 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 *-b*, *--blocksize*=_OCTETS_::
   Specifies the maximum permitted block size in octets (513..65464). Actual block size is negotiated with the client via the `blksize` extension (RFC 2348). Set to 0 (default) to impose no server-side limit. Note that even when set to 0, the negotiated block size may still be capped to the interface MTU minus protocol overhead unless `--ignore-mtu` is specified.
 
-*--ignore-mtu*::
+*-M*, *--ignore-mtu*::
   Honors the client-requested block size without clamping to the interface MTU. By default, s3tftpd clamps the negotiated block size to the interface MTU minus protocol overhead to avoid UDP fragmentation.
 
-*--anticipate*=_WINDOW-SIZE_::
+*-a*, *--anticipate*=_WINDOW-SIZE_::
   [experimental] Enables sender anticipation feature, in which the server sends at most _WINDOW-SIZE_ data blocks before waiting ACK packets from the client. It can improve download speed. Set 0 to disable the feature. Default: 0 (disabled).
 
 *--no-dualstack*::
@@ -53,7 +53,7 @@ systemd-socket-activate -d -l 69 s3tftpd s3://bucket/prefix/
 *--force-path-style*::
   Tells s3tftpd to use the path-style URLs when accessing objects. Useful when connecting to S3-compatible object storage.
 
-*--single-port*::
+*-s*, *--single-port*::
   [experimantal] Tells s3tftpd to use a single port for all the connections. By default, s3tftpd responds each request with a random source port as defined by the protocol standard. But packets from random port is often blocked by firewalls or NAT gateways between the client and the server. When this flag is set, s3tftpd responds back with the same port as it listens for the incoming requests, so that the response packet is likely allowed by the firewalls.
 
 *-v*, *--verbosity*=_0-8_::

@@ -11,13 +11,23 @@ Copyright:
  Copyright (C) 2018 Alec Thomas
 License: MIT
 
-Files: vendor/github.com/aws/aws-sdk-go/*
+Files: vendor/github.com/aws/aws-sdk-go-v2/*
 Copyright:
  Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  Copyright 2014-2015 Stripe, Inc.
 License: Apache-2.0
 
-Files: vendor/github.com/aws/aws-sdk-go/internal/sync/singleflight/*
+Files: vendor/github.com/aws/aws-sdk-go-v2/internal/sync/singleflight/*
+Copyright:
+ Copyright (c) 2009 The Go Authors. All rights reserved.
+License: BSD-3-Clause-Google
+
+Files: vendor/github.com/aws/smithy-go/*
+Copyright:
+ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+License: Apache-2.0
+
+Files: vendor/github.com/aws/smithy-go/internal/sync/singleflight/*
 Copyright:
  Copyright (c) 2009 The Go Authors. All rights reserved.
 License: BSD-3-Clause-Google
@@ -27,20 +37,10 @@ Copyright:
  Copyright 2018 CoreOS, Inc
 License: Apache-2.0
 
-Files: vendor/github.com/jmespath/go-jmespath/*
-Copyright:
- Copyright 2015 James Saryerwinnie
-License: Apache-2.0
-
 Files: vendor/github.com/pin/tftp/*
 Copyright:
  Copyright (c) 2016 Dmitri Popov
 License: MIT
-
-Files: vendor/github.com/pkg/errors/*
-Copyright:
- Copyright (c) 2015, Dave Cheney <dave@cheney.net>
-License: BSD-2-Clause
 
 Files: vendor/golang.org/x/net/*
 Copyright:

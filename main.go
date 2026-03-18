@@ -18,11 +18,13 @@ import (
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/coreos/go-systemd/v22/activation"
 	"github.com/coreos/go-systemd/v22/daemon"
 	"github.com/pin/tftp/v3"
 )
 
+// Update README.adoc as well when modifying CLI options.
 type Args struct {
 	S3uri url.URL `arg:"" required:"" name:"S3URI" help:"s3:// URI that identifies the target bucket and optional key prefix"`
 
@@ -32,11 +34,14 @@ type Args struct {
 	BlockSize      int    `short:"b" name:"blocksize" default:"0" help:"Maximum permitted block size in octets (513..65464); 0 means no server-side limit. May be further clamped by MTU (see --ignore-mtu)"`
 	IgnoreMTU      bool   `short:"M" name:"ignore-mtu" help:"Honor client-requested block size without clamping to the interface MTU"`
 	Anticipate     uint   `short:"a" name:"anticipate" default:"0" help:"Size of anticipation window. Set 0 to disable sender anticipation (experimental)"`
+	SinglePort     bool   `short:"s" name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
 	NoDualStack    bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
 	Accelerate     bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
-	EndpointURL    string `name:"endpoint-url" help:"Use custom endpoint URL instead of default S3 endpoint" placeholder:"URL"`
+	ExpectedBucketOwner string `name:"expected-bucket-owner" help:"Reject requests if the bucket is not owned by the specified AWS account ID" placeholder:"ACCOUNT-ID"`
+	EndpointURL         string `name:"endpoint-url" help:"Use custom endpoint URL instead of default S3 endpoint" placeholder:"URL"`
 	ForcePathStyle bool   `name:"force-path-style" help:"Use path-style URLs to access objects"`
-	SinglePort     bool   `short:"s" name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
+	NoSignRequest  bool   `name:"no-sign-request" help:"Make requests without signing. Suitable for accessing publicly accessible buckets"`
+	RequesterPays  bool   `name:"requester-pays" help:"Indicate that the requester will pay for requests and data transfer"`
 	Verbosity      int    `short:"v" name:"verbosity" default:"7" help:"Verbosity level for logging (0..8)"`
 	DebugApi       bool   `name:"debug-api" env:"AWS_DEBUG" help:"Enable logging AWS API calls"`
 }
@@ -60,6 +65,10 @@ func (c *Config) awsOptions() (options []func(*awsConfig.LoadOptions) error) {
 
 	if c.Region != "" {
 		options = append(options, awsConfig.WithRegion(c.Region))
+	}
+
+	if c.NoSignRequest {
+		options = append(options, awsConfig.WithCredentialsProvider(aws.AnonymousCredentials{}))
 	}
 
 	if c.EndpointURL != "" {
@@ -98,10 +107,17 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 
 	key := prefixKey(c.prefix, path)
 	c.logf(7, "GetObject %s %s", c.bucket, key)
-	ret, err := c.s3.GetObject(c.ctx, &s3.GetObjectInput{
+	input := &s3.GetObjectInput{
 		Bucket: aws.String(c.bucket),
 		Key:    aws.String(key),
-	})
+	}
+	if c.ExpectedBucketOwner != "" {
+		input.ExpectedBucketOwner = aws.String(c.ExpectedBucketOwner)
+	}
+	if c.RequesterPays {
+		input.RequestPayer = types.RequestPayerRequester
+	}
+	ret, err := c.s3.GetObject(c.ctx, input)
 	if err != nil {
 		return err
 	}
@@ -131,11 +147,18 @@ func (c *Config) handleWrite(path string, wt io.WriterTo) error {
 
 	key := prefixKey(c.prefix, path)
 	c.logf(7, "PutObject %s %s", c.bucket, key)
-	_, err := s3manager.NewUploader(c.s3).Upload(c.ctx, &s3.PutObjectInput{
+	input := &s3.PutObjectInput{
 		Bucket: aws.String(c.bucket),
 		Key:    aws.String(key),
 		Body:   buffer(wt),
-	})
+	}
+	if c.ExpectedBucketOwner != "" {
+		input.ExpectedBucketOwner = aws.String(c.ExpectedBucketOwner)
+	}
+	if c.RequesterPays {
+		input.RequestPayer = types.RequestPayerRequester
+	}
+	_, err := s3manager.NewUploader(c.s3).Upload(c.ctx, input)
 	if err != nil {
 		return err
 	}

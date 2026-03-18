@@ -3,7 +3,7 @@ Upstream-Name: s3tftpd
 Source: https://github.com/hanazuki/s3tftpd
 
 Files: *
-Copyright: 2018 Kasumi Hanazuki <kasumi@rollingapple.net>
+Copyright: 2018-2023,2024-2026 Kasumi Hanazuki <kasumi@rollingapple.net>
 License: MIT
 
 Files: vendor/github.com/alecthomas/kong/*

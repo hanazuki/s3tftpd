@@ -49,6 +49,15 @@ class SocketActivation
 
 end
 
+def build_s3_client
+  options = {}
+  if (endpoint_url = ENV['S3TFTPD_TEST_ENDPOINT_URL'])
+    options[:endpoint] = endpoint_url
+    options[:force_path_style] = true
+  end
+  Aws::S3::Client.new(**options)
+end
+
 class IO
   def expect!(pattern, timeout = 3)
     unless ret = expect(pattern, timeout)

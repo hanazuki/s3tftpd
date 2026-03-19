@@ -10,8 +10,17 @@ describe 's3tftpd' do
     end
   end
 
-  let(:bucket_name) { ENV.fetch('TEST_BUCKET_NAME') }
-  let(:command_args) { ["s3://#{bucket_name}"] }
+  let(:bucket_name) { ENV.fetch('S3TFTPD_TEST_BUCKET_NAME') }
+
+  let(:extra_args) do
+    if (url = ENV['S3TFTPD_TEST_ENDPOINT_URL'])
+      ["--endpoint-url", url, "--force-path-style"]
+    else
+      nil
+    end
+  end
+
+  let(:command_args) { ["s3://#{bucket_name}", *extra_args] }
 
   around do |example|
     activation = SocketActivation.new(Pathname(__dir__) + '../s3tftpd', *command_args)
@@ -83,7 +92,7 @@ describe 's3tftpd' do
     end
 
     context 'When S3_URI has prefix' do
-      let(:command_args) { ["s3://#{bucket_name}/prefix"] }
+      let(:command_args) { ["s3://#{bucket_name}/prefix", *extra_args] }
 
       context 'get /test1' do
         include_examples 'not-found' do
@@ -124,8 +133,7 @@ describe 's3tftpd' do
         cout.expect!(LINE, 3) # discard echoback
         cout.expect!('tftp> ', 3)
 
-        s3 = Aws::S3::Client.new
-        remote_content = s3.get_object(bucket: bucket_name, key: request_path).body.read
+        remote_content = build_s3_client.get_object(bucket: bucket_name, key: request_path).body.read
         expect(remote_content).to eq content
       end
     end

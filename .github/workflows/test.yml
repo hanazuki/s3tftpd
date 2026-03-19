@@ -40,7 +40,31 @@ jobs:
       run: |
         bundle exec rspec
       env:
-        TEST_BUCKET_NAME: hanazuki-s3tftpd-test
+        S3TFTPD_TEST_BUCKET_NAME: hanazuki-s3tftpd-test
+
+  test-rustfs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Prepare
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y tftp-hpa
+    - uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+    - name: Build
+      run: |
+        make build
+    - name: Start RustFS
+      run: |
+        docker compose -f spec/docker-compose.yml up -d --wait
+    - name: Setup fixtures
+      run: |
+        ./spec/rustfs_env.rb bundle exec ruby spec/setup.rb
+    - name: Integration test
+      run: |
+        ./spec/rustfs_env.rb bundle exec rspec
 
   docker-build:
     strategy:
@@ -90,6 +114,7 @@ jobs:
   docker-merge:
     needs:
     - test
+    - test-rustfs
     - docker-build
     runs-on: ubuntu-slim
     permissions:

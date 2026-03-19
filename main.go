@@ -70,22 +70,6 @@ func (c *Config) awsOptions() (options []func(*awsConfig.LoadOptions) error) {
 		options = append(options, awsConfig.WithCredentialsProvider(aws.AnonymousCredentials{}))
 	}
 
-	if c.EndpointURL != "" {
-		resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-			if service == s3.ServiceID {
-				return aws.Endpoint{
-					PartitionID:       "aws",
-					URL:               c.EndpointURL,
-					SigningRegion:     c.Region,
-					HostnameImmutable: true,
-				}, nil
-			}
-			return aws.Endpoint{}, fmt.Errorf("unknown endpoint requested")
-		})
-
-		options = append(options, awsConfig.WithEndpointResolverWithOptions(resolver))
-	}
-
 	return
 }
 
@@ -240,12 +224,16 @@ func main() {
 	}
 
 	config.s3 = s3.NewFromConfig(awsConfig, func(o *s3.Options) {
-		o.UsePathStyle = config.ForcePathStyle
 		o.UseAccelerate = config.Accelerate
-		if config.NoDualStack {
-			o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateDisabled
+		o.UsePathStyle = config.ForcePathStyle
+		if config.EndpointURL == "" {
+			if config.NoDualStack {
+				o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateDisabled
+			} else {
+				o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateEnabled
+			}
 		} else {
-			o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateEnabled
+			o.BaseEndpoint = aws.String(config.EndpointURL)
 		}
 	})
 

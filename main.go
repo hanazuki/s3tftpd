@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -15,7 +14,8 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsConfig "github.com/aws/aws-sdk-go-v2/config"
-	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
+	tftypes "github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/coreos/go-systemd/v22/activation"
@@ -118,12 +118,6 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 	return nil
 }
 
-func buffer(wt io.WriterTo) io.Reader {
-	buffer := bytes.NewBuffer(make([]byte, 0))
-	wt.WriteTo(buffer)
-	return buffer
-}
-
 func (c *Config) handleWrite(path string, wt io.WriterTo) error {
 	xfer := wt.(tftp.IncomingTransfer)
 	remoteAddr := xfer.RemoteAddr()
@@ -132,23 +126,27 @@ func (c *Config) handleWrite(path string, wt io.WriterTo) error {
 	bucket := c.Args.S3uri.Bucket
 	key := c.Args.S3uri.GetKey(path)
 	c.logf(7, "PutObject %s %s", bucket, key)
-	input := &s3.PutObjectInput{
+
+	pr, pw := io.Pipe()
+	go func() {
+		_, err := wt.WriteTo(pw)
+		pw.CloseWithError(err)
+	}()
+
+	input := &transfermanager.UploadObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
-		Body:   buffer(wt),
+		Body:   pr,
 	}
 	if c.ExpectedBucketOwner != "" {
 		input.ExpectedBucketOwner = aws.String(c.ExpectedBucketOwner)
 	}
 	if c.RequesterPays {
-		input.RequestPayer = types.RequestPayerRequester
+		input.RequestPayer = tftypes.RequestPayerRequester
 	}
-	_, err := s3manager.NewUploader(c.s3).Upload(c.ctx, input)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err := transfermanager.New(c.s3).UploadObject(c.ctx, input)
+	pr.CloseWithError(err)
+	return err
 }
 
 type hook struct {

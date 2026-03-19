@@ -73,10 +73,10 @@ func (c *Config) awsOptions() (options []func(*awsConfig.LoadOptions) error) {
 	return
 }
 
-func (c *Config) logf(severity int, format string, args ...interface{}) (n int, error error) {
+func (c *Config) logf(severity int, format string, args ...any) (n int, error error) {
 	return c.log(severity, fmt.Sprintf(format, args...))
 }
-func (c *Config) log(severity int, message interface{}) (n int, error error) {
+func (c *Config) log(severity int, message any) (n int, error error) {
 	if severity >= c.Verbosity {
 		return 0, nil
 	}

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -26,8 +25,8 @@ import (
 
 // Update README.adoc as well when modifying CLI options.
 type Args struct {
-	S3uri  url.URL `arg:"" required:"" name:"S3URI" help:"s3:// URI that identifies the target bucket and optional key prefix"`
-	Region string  `name:"region" help:"AWS region where the bucket resides" placeholder:"REGION"`
+	S3uri  S3Uri  `arg:"" required:"" name:"S3URI" help:"s3:// URI that identifies the target bucket and optional key prefix"`
+	Region string `name:"region" help:"AWS region where the bucket resides" placeholder:"REGION"`
 
 	Retries   int  `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
 	Timeout   int  `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
@@ -52,11 +51,7 @@ type Args struct {
 
 type Config struct {
 	Args
-
-	bucket string
-	prefix string
-	s3     *s3.Client
-
+	s3  *s3.Client
 	ctx context.Context
 }
 
@@ -109,10 +104,11 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 	remoteAddr := xfer.RemoteAddr()
 	c.logf(6, "RRQ %s %s", remoteAddr.String(), path)
 
-	key := prefixKey(c.prefix, path)
-	c.logf(7, "GetObject %s %s", c.bucket, key)
+	bucket := c.Args.S3uri.Bucket
+	key := c.Args.S3uri.GetKey(path)
+	c.logf(7, "GetObject %s %s", bucket, key)
 	input := &s3.GetObjectInput{
-		Bucket: aws.String(c.bucket),
+		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	}
 	if c.ExpectedBucketOwner != "" {
@@ -149,10 +145,11 @@ func (c *Config) handleWrite(path string, wt io.WriterTo) error {
 	remoteAddr := xfer.RemoteAddr()
 	c.logf(6, "WRQ %s %s", remoteAddr.String(), path)
 
-	key := prefixKey(c.prefix, path)
-	c.logf(7, "PutObject %s %s", c.bucket, key)
+	bucket := c.Args.S3uri.Bucket
+	key := c.Args.S3uri.GetKey(path)
+	c.logf(7, "PutObject %s %s", bucket, key)
 	input := &s3.PutObjectInput{
-		Bucket: aws.String(c.bucket),
+		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 		Body:   buffer(wt),
 	}
@@ -214,11 +211,6 @@ func parseArgs(ctx context.Context) (config Config, err error) {
 	parser.Model.HelpFlag.Short = 'h'
 
 	_, err = parser.Parse(os.Args[1:])
-	if err != nil {
-		return
-	}
-
-	config.bucket, config.prefix, err = parseS3uri(config.S3uri)
 	if err != nil {
 		return
 	}

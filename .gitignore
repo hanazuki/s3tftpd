@@ -1,2 +1,3 @@
 s3tftpd
 *.[1-9]
+/vendor/

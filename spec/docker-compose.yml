@@ -1,0 +1,13 @@
+services:
+  rustfs:
+    image: rustfs/rustfs:1.0.0-alpha.89
+    ports:
+      - "9000"
+    environment:
+      RUSTFS_ROOT_USER: rustfsroot
+      RUSTFS_ROOT_PASSWORD: f69d68c2ac8f6a4f3ea2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 1s
+      timeout: 1s
+      retries: 15

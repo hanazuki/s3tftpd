@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -26,33 +25,33 @@ import (
 
 // Update README.adoc as well when modifying CLI options.
 type Args struct {
-	S3uri url.URL `arg:"" required:"" name:"S3URI" help:"s3:// URI that identifies the target bucket and optional key prefix"`
+	S3uri  S3Uri  `arg:"" required:"" name:"S3URI" help:"s3:// URI that identifies the target bucket and optional key prefix"`
+	Region string `name:"region" help:"AWS region where the bucket resides" placeholder:"REGION"`
 
-	Region         string `name:"region" help:"AWS region where the bucket resides" placeholder:"REGION"`
-	Retries        int    `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
-	Timeout        int    `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
-	BlockSize      int    `short:"b" name:"blocksize" default:"0" help:"Maximum permitted block size in octets (513..65464); 0 means no server-side limit. May be further clamped by MTU (see --ignore-mtu)"`
-	IgnoreMTU      bool   `short:"M" name:"ignore-mtu" help:"Honor client-requested block size without clamping to the interface MTU"`
-	Anticipate     uint   `short:"a" name:"anticipate" default:"0" help:"Size of anticipation window. Set 0 to disable sender anticipation (experimental)"`
-	SinglePort     bool   `short:"s" name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
+	Retries   int  `short:"r" name:"retries" default:"5" help:"Number of retransmissions before the server disconnect the session"`
+	Timeout   int  `short:"t" name:"timeout" default:"5000" help:"Timeout in milliseconds before the server retransmits a packet"`
+	BlockSize int  `short:"b" name:"blocksize" default:"0" help:"Maximum permitted block size in octets (513..65464); 0 means no server-side limit. May be further clamped by MTU (see --ignore-mtu)"`
+	IgnoreMTU bool `short:"M" name:"ignore-mtu" help:"Honor client-requested block size without clamping to the interface MTU"`
+
+	Anticipate uint `short:"a" name:"anticipate" default:"0" help:"Size of anticipation window. Set 0 to disable sender anticipation (experimental)"`
+	SinglePort bool `short:"s" name:"single-port" help:"Serve all connections on a single UDP socket (experimental)"`
+
+	ExpectedBucketOwner string `name:"expected-bucket-owner" help:"Reject requests if the bucket is not owned by the specified AWS account ID" placeholder:"ACCOUNT-ID"`
+
 	NoDualStack    bool   `name:"no-dualstack" help:"Disable S3 dualstack endpoint"`
 	Accelerate     bool   `name:"accelerate" help:"Enable S3 Transfer Acceleration"`
-	ExpectedBucketOwner string `name:"expected-bucket-owner" help:"Reject requests if the bucket is not owned by the specified AWS account ID" placeholder:"ACCOUNT-ID"`
-	EndpointURL         string `name:"endpoint-url" help:"Use custom endpoint URL instead of default S3 endpoint" placeholder:"URL"`
+	EndpointURL    string `name:"endpoint-url" help:"Use custom endpoint URL instead of default S3 endpoint" placeholder:"URL"`
 	ForcePathStyle bool   `name:"force-path-style" help:"Use path-style URLs to access objects"`
 	NoSignRequest  bool   `name:"no-sign-request" help:"Make requests without signing. Suitable for accessing publicly accessible buckets"`
 	RequesterPays  bool   `name:"requester-pays" help:"Indicate that the requester will pay for requests and data transfer"`
-	Verbosity      int    `short:"v" name:"verbosity" default:"7" help:"Verbosity level for logging (0..8)"`
-	DebugApi       bool   `name:"debug-api" env:"AWS_DEBUG" help:"Enable logging AWS API calls"`
+
+	Verbosity int  `short:"v" name:"verbosity" default:"7" help:"Verbosity level for logging (0..8)"`
+	DebugApi  bool `name:"debug-api" env:"AWS_DEBUG" help:"Enable logging AWS API calls"`
 }
 
 type Config struct {
 	Args
-
-	bucket string
-	prefix string
-	s3     *s3.Client
-
+	s3  *s3.Client
 	ctx context.Context
 }
 
@@ -69,22 +68,6 @@ func (c *Config) awsOptions() (options []func(*awsConfig.LoadOptions) error) {
 
 	if c.NoSignRequest {
 		options = append(options, awsConfig.WithCredentialsProvider(aws.AnonymousCredentials{}))
-	}
-
-	if c.EndpointURL != "" {
-		resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-			if service == s3.ServiceID {
-				return aws.Endpoint{
-					PartitionID:       "aws",
-					URL:               c.EndpointURL,
-					SigningRegion:     c.Region,
-					HostnameImmutable: true,
-				}, nil
-			}
-			return aws.Endpoint{}, fmt.Errorf("unknown endpoint requested")
-		})
-
-		options = append(options, awsConfig.WithEndpointResolverWithOptions(resolver))
 	}
 
 	return
@@ -105,10 +88,11 @@ func (c *Config) handleRead(path string, rf io.ReaderFrom) error {
 	remoteAddr := xfer.RemoteAddr()
 	c.logf(6, "RRQ %s %s", remoteAddr.String(), path)
 
-	key := prefixKey(c.prefix, path)
-	c.logf(7, "GetObject %s %s", c.bucket, key)
+	bucket := c.Args.S3uri.Bucket
+	key := c.Args.S3uri.GetKey(path)
+	c.logf(7, "GetObject %s %s", bucket, key)
 	input := &s3.GetObjectInput{
-		Bucket: aws.String(c.bucket),
+		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	}
 	if c.ExpectedBucketOwner != "" {
@@ -145,10 +129,11 @@ func (c *Config) handleWrite(path string, wt io.WriterTo) error {
 	remoteAddr := xfer.RemoteAddr()
 	c.logf(6, "WRQ %s %s", remoteAddr.String(), path)
 
-	key := prefixKey(c.prefix, path)
-	c.logf(7, "PutObject %s %s", c.bucket, key)
+	bucket := c.Args.S3uri.Bucket
+	key := c.Args.S3uri.GetKey(path)
+	c.logf(7, "PutObject %s %s", bucket, key)
 	input := &s3.PutObjectInput{
-		Bucket: aws.String(c.bucket),
+		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 		Body:   buffer(wt),
 	}
@@ -214,11 +199,6 @@ func parseArgs(ctx context.Context) (config Config, err error) {
 		return
 	}
 
-	config.bucket, config.prefix, err = parseS3uri(config.S3uri)
-	if err != nil {
-		return
-	}
-
 	return
 }
 
@@ -244,12 +224,16 @@ func main() {
 	}
 
 	config.s3 = s3.NewFromConfig(awsConfig, func(o *s3.Options) {
-		o.UsePathStyle = config.ForcePathStyle
 		o.UseAccelerate = config.Accelerate
-		if config.NoDualStack {
-			o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateDisabled
+		o.UsePathStyle = config.ForcePathStyle
+		if config.EndpointURL == "" {
+			if config.NoDualStack {
+				o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateDisabled
+			} else {
+				o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateEnabled
+			}
 		} else {
-			o.EndpointOptions.UseDualStackEndpoint = aws.DualStackEndpointStateEnabled
+			o.BaseEndpoint = aws.String(config.EndpointURL)
 		}
 	})
 

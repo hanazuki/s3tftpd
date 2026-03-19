@@ -1,9 +1,17 @@
 #!/usr/bin/env ruby
 require 'aws-sdk-s3'
 
-s3 = Aws::S3::Resource.new(region: ENV.fetch('AWS_REGION'))
-bucket_name = ENV.fetch('TEST_BUCKET_NAME')
+options = {region: ENV.fetch('AWS_REGION', ENV['AWS_DEFAULT_REGION'])}
+if endpoint_url = ENV['S3TFTPD_TEST_ENDPOINT_URL']
+  options[:endpoint] = endpoint_url
+  options[:force_path_style] = true
+end
+
+s3 = Aws::S3::Resource.new(**options)
+bucket_name = ENV.fetch('S3TFTPD_TEST_BUCKET_NAME')
 bucket = s3.bucket(bucket_name)
+
+bucket.create unless bucket.exists?
 
 bucket.policy.delete
 
@@ -18,7 +26,7 @@ bucket.policy.put({
         {
           Effect: "Deny",
           Principal: "*",
-          Action: "s3:PutObject*",
+          Action: %w[s3:PutObject s3:PutObjectAcl],
           NotResource: "arn:aws:s3:::#{bucket_name}/writable/*"
         }
       ]
